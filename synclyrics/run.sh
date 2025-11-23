@@ -27,4 +27,4 @@ export DESKTOP="Linux"
 export PYTHONUNBUFFERED=1
 
 # Run the app
-python3 sync_lyrics.py
+exec python3 sync_lyrics.py
