@@ -1,5 +1,5 @@
 name: "SyncLyrics"
-version: "1.0.7"
+version: "1.0.8"
 slug: "synclyrics"
 init: false
 description: "Real-time synchronized lyrics for your smart home."
@@ -26,8 +26,9 @@ schema:
   spotify_redirect_uri: str
   spotify_base_url: str
   server_port: int
-ports:
-  9012/tcp: 9012
+# ports:
+#   9012/tcp: 9012
+host_network: true
 ingress: true
 ingress_port: 9012
 ingress_entry: /
