@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bashio
+
 set -e
 
 echo "Starting SyncLyrics..."
