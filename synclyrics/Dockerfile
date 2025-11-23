@@ -14,7 +14,8 @@ RUN \
     gcc \
     musl-dev \
     jpeg-dev \
-    zlib-dev
+    zlib-dev \
+    dos2unix
 
 WORKDIR /app
 
@@ -32,6 +33,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
 # Copy run script (Local override if needed, or use the one from repo if you commit it)
 COPY run.sh /run.sh
-RUN chmod a+x /run.sh
+RUN dos2unix /run.sh && chmod a+x /run.sh
 
 CMD [ "/run.sh" ]

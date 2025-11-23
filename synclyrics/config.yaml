@@ -15,11 +15,13 @@ options:
   spotify_client_id: ""
   spotify_client_secret: ""
   spotify_redirect_uri: "http://homeassistant.local:9012/callback"
+  spotify_base_url: "https://fake-spotify-lyrics-api-azure.vercel.app"
   server_port: 9012
 schema:
   spotify_client_id: str
   spotify_client_secret: str
   spotify_redirect_uri: str
+  spotify_base_url: str
   server_port: int
 ports:
   9012/tcp: 9012
