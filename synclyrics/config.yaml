@@ -1,5 +1,5 @@
 name: "SyncLyrics"
-version: "1.1.1"
+version: "1.1.2"
 slug: "synclyrics"
 init: false
 description: "Real-time synchronized lyrics for your smart home."
@@ -20,12 +20,14 @@ options:
   spotify_redirect_uri: "http://homeassistant.local:9012/callback"
   spotify_base_url: "https://fake-spotify-lyrics-api-azure.vercel.app"
   server_port: 9012
+  spotify_cache_path: "/config/.spotify_cache"  # Persistent storage for Spotify tokens
 schema:
   spotify_client_id: str
   spotify_client_secret: str
   spotify_redirect_uri: str
   spotify_base_url: str
   server_port: int
+  spotify_cache_path: str
 # ports:
 #   9012/tcp: 9012
 host_network: true

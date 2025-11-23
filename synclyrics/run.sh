@@ -19,6 +19,17 @@ export SPOTIFY_REDIRECT_URI=$(get_config 'spotify_redirect_uri')
 export SPOTIFY_BASE_URL=$(get_config 'spotify_base_url')
 export SERVER_PORT=$(get_config 'server_port')
 
+# Set persistent cache path for Spotify tokens
+# Home Assistant maps /config to persistent storage
+export SPOTIPY_CACHE_PATH=$(get_config 'spotify_cache_path')
+
+# Ensure cache directory exists
+CACHE_DIR=$(dirname "$SPOTIPY_CACHE_PATH")
+mkdir -p "$CACHE_DIR"
+
+# Log cache path for debugging
+echo "Spotify token cache path: $SPOTIPY_CACHE_PATH"
+
 # Generate a random secret key for the session
 export QUART_SECRET_KEY="ha-secret-$(date +%s)"
 
