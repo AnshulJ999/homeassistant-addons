@@ -25,7 +25,8 @@ RUN git clone -b ${BRANCH} https://github.com/AnshulJ999/SyncLyrics.git .
 RUN sed -i '/winsdk/d' requirements.txt && \
     sed -i '/pywin32/d' requirements.txt && \
     sed -i '/pystray/d' requirements.txt && \
-    sed -i '/desktop-notifier/d' requirements.txt
+    sed -i '/desktop-notifier/d' requirements.txt && \
+    echo "spotipy" >> requirements.txt
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
