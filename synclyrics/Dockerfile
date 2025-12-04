@@ -115,57 +115,48 @@ if settings_py.exists():
             f.write(content)
 
 # Patch state_manager.py - Add environment variable support for state file path
+# IMPORTANT: Replace "state.json" FIRST, then add STATE_FILE definition to avoid self-reference
 state_manager_py = Path("state_manager.py")
 if state_manager_py.exists():
-    # Read the file to understand its structure
     with open(state_manager_py, 'r', encoding='utf-8') as f:
         content = f.read()
     
     new_content = content
-    changed = False
     
-    # Add STATE_FILE constant and os import if not present
-    if 'STATE_FILE' not in content:
-        # Try to find a good place to add it (after imports, before class/function definitions)
-        # Look for end of imports (blank line after import statements)
-        import_match = re.search(r'(^import\s+.*?\n)(\n)', content, re.MULTILINE | re.DOTALL)
+    # STEP 1: Replace "state.json" references with STATE_FILE variable FIRST
+    # (before adding the STATE_FILE definition to avoid self-reference)
+    new_content = new_content.replace('path.exists("state.json")', 'path.exists(STATE_FILE)')
+    new_content = new_content.replace('path.exists(\'state.json\')', 'path.exists(STATE_FILE)')
+    new_content = new_content.replace('os.path.exists("state.json")', 'os.path.exists(STATE_FILE)')
+    new_content = new_content.replace('os.path.exists(\'state.json\')', 'os.path.exists(STATE_FILE)')
+    new_content = new_content.replace('open("state.json"', 'open(STATE_FILE')
+    new_content = new_content.replace('open(\'state.json\'', 'open(STATE_FILE')
+    # Handle os.replace(temp_path, "state.json") pattern
+    new_content = re.sub(r'os\.replace\(([^,]+),\s*["\']state\.json["\']\)', r'os.replace(\1, STATE_FILE)', new_content)
+    # Handle os.remove("state.json") pattern
+    new_content = re.sub(r'os\.remove\(["\']state\.json["\']\)', 'os.remove(STATE_FILE)', new_content)
+    
+    # STEP 2: Now add STATE_FILE definition at the top (after imports)
+    if 'STATE_FILE' not in content:  # Check original content, not modified
+        # Find the end of imports (look for 'import uuid' line as a common import)
+        import_match = re.search(r'(import uuid\n)', new_content)
+        if not import_match:
+            # Fallback: find any import line
+            import_match = re.search(r'(^import\s+\w+\n)', new_content, re.MULTILINE)
+        
         if import_match:
+            insert_pos = import_match.end()
             # Check if os is already imported
-            if 'import os' not in content and 'from os import' not in content:
-                # Add os import and STATE_FILE constant after imports
-                new_content = content[:import_match.end(1)] + \
-                    'import os\n' + \
-                    content[import_match.end(1):import_match.end(2)] + \
-                    '# Allow overriding state file location via environment variable for HAOS persistence\n' + \
-                    'STATE_FILE = os.getenv("SYNCLYRICS_STATE_FILE", "state.json")\n' + \
-                    content[import_match.end(2):]
-                changed = True
+            if 'import os' not in new_content and 'from os import' not in new_content:
+                state_file_def = '\nimport os\n# Allow overriding state file location via environment variable for HAOS persistence\nSTATE_FILE = os.getenv("SYNCLYRICS_STATE_FILE", "state.json")\n'
             else:
-                # os already imported, just add STATE_FILE
-                new_content = content[:import_match.end(2)] + \
-                    '# Allow overriding state file location via environment variable for HAOS persistence\n' + \
-                    'STATE_FILE = os.getenv("SYNCLYRICS_STATE_FILE", "state.json")\n' + \
-                    content[import_match.end(2):]
-                changed = True
+                state_file_def = '\n# Allow overriding state file location via environment variable for HAOS persistence\nSTATE_FILE = os.getenv("SYNCLYRICS_STATE_FILE", "state.json")\n'
+            new_content = new_content[:insert_pos] + state_file_def + new_content[insert_pos:]
         else:
             # Fallback: add at the beginning
-            if 'import os' not in content:
+            if 'import os' not in new_content:
                 new_content = 'import os\n' + new_content
-            new_content = '# Allow overriding state file location via environment variable for HAOS persistence\n' + \
-                'STATE_FILE = os.getenv("SYNCLYRICS_STATE_FILE", "state.json")\n\n' + new_content
-            changed = True
-    
-    # Replace specific patterns where "state.json" is used as a file path
-    # Pattern 1: path.exists("state.json")
-    new_content = re.sub(r'path\.exists\(["\']state\.json["\']\)', 'path.exists(STATE_FILE)', new_content)
-    # Pattern 2: os.path.exists("state.json")
-    new_content = re.sub(r'os\.path\.exists\(["\']state\.json["\']\)', 'os.path.exists(STATE_FILE)', new_content)
-    # Pattern 3: "state.json" in file operations (os.remove, open, etc.)
-    new_content = re.sub(r'(os\.(remove|replace|rename)\(["\'])(state\.json)(["\'])', r'\1' + 'STATE_FILE' + r'\4', new_content)
-    # Pattern 4: open("state.json", ...)
-    new_content = re.sub(r'open\(["\']state\.json["\']', 'open(STATE_FILE', new_content)
-    # Pattern 5: os.replace(..., "state.json") or similar
-    new_content = re.sub(r'(["\'][^"\']*["\']\s*,\s*)(["\']state\.json["\'])', r'\1STATE_FILE', new_content)
+            new_content = '# Allow overriding state file location via environment variable for HAOS persistence\nSTATE_FILE = os.getenv("SYNCLYRICS_STATE_FILE", "state.json")\n\n' + new_content
     
     if new_content != content:
         with open(state_manager_py, 'w', encoding='utf-8') as f:
