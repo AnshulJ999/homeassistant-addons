@@ -174,30 +174,8 @@ if state_manager_py.exists():
     else:
         print(f"No changes needed: {state_manager_py}")
 
-# Patch logging_config.py - Add environment variable support for logs directory
-logging_config_py = Path("logging_config.py")
-if logging_config_py.exists():
-    patch_file(logging_config_py, [
-        # Replace LOGS_DIR definition to support env var
-        # Look for pattern like: LOGS_DIR = ROOT_DIR / "logs"
-        (
-            r'(LOGS_DIR\s*=\s*)ROOT_DIR\s*/\s*["\']logs["\']',
-            r'''\1Path(os.getenv("SYNCLYRICS_LOGS_DIR", str(ROOT_DIR / "logs")))'''
-        ),
-        # Also handle if it's defined differently
-        (
-            r'(LOGS_DIR\s*=\s*Path\([^)]+\)\s*/\s*["\']logs["\']',
-            r'''\1Path(os.getenv("SYNCLYRICS_LOGS_DIR", str(Path(__file__).parent / "logs")))'''
-        ),
-    ])
-    # Ensure os import exists
-    with open(logging_config_py, 'r', encoding='utf-8') as f:
-        content = f.read()
-    if 'import os' not in content and 'from os import' not in content:
-        # Add os import
-        content = re.sub(r'(^import\s+\w+)', r'\1\nimport os', content, count=1, flags=re.MULTILINE)
-        with open(logging_config_py, 'w', encoding='utf-8') as f:
-            f.write(content)
+# Note: logging_config.py already has SYNCLYRICS_LOGS_DIR env var support in the main codebase
+# No patching needed for logging_config.py
 
 print("Python source files patched for HAOS persistence support")
 EOF
