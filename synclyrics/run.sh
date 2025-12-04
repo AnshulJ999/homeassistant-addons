@@ -31,23 +31,24 @@ if [ -z "$SPOTIFY_CLIENT_ID" ] || [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
 fi
 
 # Debug and logging configuration
+# Note: config.py uses conf() function which expects DEBUG_ENABLED and DEBUG_LOG_LEVEL env vars
 if [ "$(get_config 'debug')" == "true" ]; then
-    export DEBUG="true"
+    export DEBUG_ENABLED="true"
     # If debug is enabled, override log_level to DEBUG unless explicitly set
     LOG_LEVEL_CONFIG=$(get_config 'log_level')
     if [ -z "$LOG_LEVEL_CONFIG" ] || [ "$LOG_LEVEL_CONFIG" == "null" ]; then
-        export LOG_LEVEL="DEBUG"
+        export DEBUG_LOG_LEVEL="DEBUG"
     else
-        export LOG_LEVEL="$LOG_LEVEL_CONFIG"
+        export DEBUG_LOG_LEVEL="$LOG_LEVEL_CONFIG"
     fi
 else
-    export DEBUG="false"
+    export DEBUG_ENABLED="false"
     # Set log level from config (defaults to INFO if not set)
     LOG_LEVEL_CONFIG=$(get_config 'log_level')
     if [ -z "$LOG_LEVEL_CONFIG" ] || [ "$LOG_LEVEL_CONFIG" == "null" ]; then
-        export LOG_LEVEL="INFO"
+        export DEBUG_LOG_LEVEL="INFO"
     else
-        export LOG_LEVEL="$LOG_LEVEL_CONFIG"
+        export DEBUG_LOG_LEVEL="$LOG_LEVEL_CONFIG"
     fi
 fi
 
