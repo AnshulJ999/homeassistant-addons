@@ -34,6 +34,7 @@ fi
 # Note: config.py uses conf() function which expects DEBUG_ENABLED and DEBUG_LOG_LEVEL env vars
 if [ "$(get_config 'debug')" == "true" ]; then
     export DEBUG_ENABLED="true"
+    export DEBUG_LOG_DETAILED="true"  # Enable detailed debug logging to debug.log file
     # If debug is enabled, override log_level to DEBUG unless explicitly set
     LOG_LEVEL_CONFIG=$(get_config 'log_level')
     if [ -z "$LOG_LEVEL_CONFIG" ] || [ "$LOG_LEVEL_CONFIG" == "null" ]; then
@@ -43,6 +44,7 @@ if [ "$(get_config 'debug')" == "true" ]; then
     fi
 else
     export DEBUG_ENABLED="false"
+    export DEBUG_LOG_DETAILED="true"
     # Set log level from config (defaults to INFO if not set)
     LOG_LEVEL_CONFIG=$(get_config 'log_level')
     if [ -z "$LOG_LEVEL_CONFIG" ] || [ "$LOG_LEVEL_CONFIG" == "null" ]; then
@@ -102,6 +104,16 @@ echo "Cache directory: $SYNCLYRICS_CACHE_DIR"
 echo "State file: $SYNCLYRICS_STATE_FILE"
 echo "Logs directory: $SYNCLYRICS_LOGS_DIR"
 echo "Spotify token cache path: $SPOTIPY_CACHE_PATH"
+
+# Debug: Print environment variables for troubleshooting
+echo "=== Environment Variables for Debugging ==="
+echo "DEBUG_ENABLED=$DEBUG_ENABLED"
+echo "DEBUG_LOG_LEVEL=$DEBUG_LOG_LEVEL"
+echo "DEBUG_LOG_DETAILED=$DEBUG_LOG_DETAILED"
+echo "SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:0:10}..."  # Only show first 10 chars for security
+echo "SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET:0:10}..."
+echo "SERVER_PORT=$SERVER_PORT"
+echo "============================================"
 
 # Generate a random secret key for the session if not present
 export QUART_SECRET_KEY="ha-secret-$(date +%s)"
