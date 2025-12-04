@@ -17,20 +17,92 @@ export SPOTIFY_CLIENT_ID=$(get_config 'spotify_client_id')
 export SPOTIFY_CLIENT_SECRET=$(get_config 'spotify_client_secret')
 export SPOTIFY_REDIRECT_URI=$(get_config 'spotify_redirect_uri')
 export SPOTIFY_BASE_URL=$(get_config 'spotify_base_url')
+export LASTFM_API_KEY=$(get_config 'lastfm_api_key')
+export FANART_TV_API_KEY=$(get_config 'fanart_tv_api_key')
+export AUDIODB_API_KEY=$(get_config 'audiodb_api_key')
 export SERVER_PORT=$(get_config 'server_port')
 
+# Validate required credentials
+# Check if Spotify credentials are configured before proceeding
+if [ -z "$SPOTIFY_CLIENT_ID" ] || [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
+    echo "ERROR: Spotify credentials not configured!"
+    echo "Please set spotify_client_id and spotify_client_secret in the add-on configuration."
+    exit 1
+fi
+
+# Debug and logging configuration
+if [ "$(get_config 'debug')" == "true" ]; then
+    export DEBUG="true"
+    # If debug is enabled, override log_level to DEBUG unless explicitly set
+    LOG_LEVEL_CONFIG=$(get_config 'log_level')
+    if [ -z "$LOG_LEVEL_CONFIG" ] || [ "$LOG_LEVEL_CONFIG" == "null" ]; then
+        export LOG_LEVEL="DEBUG"
+    else
+        export LOG_LEVEL="$LOG_LEVEL_CONFIG"
+    fi
+else
+    export DEBUG="false"
+    # Set log level from config (defaults to INFO if not set)
+    LOG_LEVEL_CONFIG=$(get_config 'log_level')
+    if [ -z "$LOG_LEVEL_CONFIG" ] || [ "$LOG_LEVEL_CONFIG" == "null" ]; then
+        export LOG_LEVEL="INFO"
+    else
+        export LOG_LEVEL="$LOG_LEVEL_CONFIG"
+    fi
+fi
+
 # Set persistent cache path for Spotify tokens
-# Home Assistant maps /config to persistent storage
+# addon_config is mapped to /config inside the container (visible to users in File Editor)
 export SPOTIPY_CACHE_PATH=$(get_config 'spotify_cache_path')
 
-# Ensure cache directory exists
-CACHE_DIR=$(dirname "$SPOTIPY_CACHE_PATH")
-mkdir -p "$CACHE_DIR"
+# All persistent data goes to /config (which is the addon_config folder, visible to users)
+# This allows users to browse/edit their lyrics databases, album art, and settings
+echo "Using addon_config storage (visible at /addon_configs/synclyrics on host)"
 
-# Log cache path for debugging
+# Ensure base directory exists
+mkdir -p "/config"
+
+# Map SyncLyrics internal paths to persistent storage via Environment Variables
+# These environment variables will be read by the Python code to use persistent storage
+# instead of the default /app directory which is ephemeral
+# All paths point to /config (addon_config) so users can see/edit their data
+
+# 1. Settings File - stores user preferences and configuration
+export SYNCLYRICS_SETTINGS_FILE="/config/settings.json"
+
+# 2. Databases - store lyrics and album art data (users can browse/edit these JSONs and images)
+# Note: Variable names must match what config.py expects (SYNCLYRICS_LYRICS_DB, not SYNCLYRICS_DATABASE_DIR)
+export SYNCLYRICS_LYRICS_DB="/config/lyrics_database"
+export SYNCLYRICS_ALBUM_ART_DB="/config/album_art_database"
+
+# 3. Cache - temporary files and cached data
+export SYNCLYRICS_CACHE_DIR="/config/cache"
+
+# 4. State File - stores UI state and theme preferences
+export SYNCLYRICS_STATE_FILE="/config/state.json"
+
+# 5. Logs - application logs for debugging (users can view these)
+export SYNCLYRICS_LOGS_DIR="/config/logs"
+
+# Ensure all subdirectories exist
+mkdir -p "$SYNCLYRICS_LYRICS_DB"
+mkdir -p "$SYNCLYRICS_ALBUM_ART_DB"
+mkdir -p "$SYNCLYRICS_CACHE_DIR"
+mkdir -p "$SYNCLYRICS_LOGS_DIR"
+
+# SPOTIPY_CACHE_PATH is a file path, so ensure its directory exists
+mkdir -p "$(dirname "$SPOTIPY_CACHE_PATH")"
+
+# Log paths for debugging
+echo "Settings file: $SYNCLYRICS_SETTINGS_FILE"
+echo "Lyrics database directory: $SYNCLYRICS_LYRICS_DB"
+echo "Album art database: $SYNCLYRICS_ALBUM_ART_DB"
+echo "Cache directory: $SYNCLYRICS_CACHE_DIR"
+echo "State file: $SYNCLYRICS_STATE_FILE"
+echo "Logs directory: $SYNCLYRICS_LOGS_DIR"
 echo "Spotify token cache path: $SPOTIPY_CACHE_PATH"
 
-# Generate a random secret key for the session
+# Generate a random secret key for the session if not present
 export QUART_SECRET_KEY="ha-secret-$(date +%s)"
 
 # Set Linux defaults
