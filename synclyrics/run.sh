@@ -89,11 +89,15 @@ export SYNCLYRICS_STATE_FILE="/config/state.json"
 # 5. Logs - application logs for debugging (users can view these)
 export SYNCLYRICS_LOGS_DIR="/config/logs"
 
+# 6. SSL Certs - persistent storage so they don't regenerate on every restart
+export SYNCLYRICS_CERTS_DIR="/config/certs"
+
 # Ensure all subdirectories exist
 mkdir -p "$SYNCLYRICS_LYRICS_DB"
 mkdir -p "$SYNCLYRICS_ALBUM_ART_DB"
 mkdir -p "$SYNCLYRICS_CACHE_DIR"
 mkdir -p "$SYNCLYRICS_LOGS_DIR"
+mkdir -p "$SYNCLYRICS_CERTS_DIR"
 
 # SPOTIPY_CACHE_PATH is a file path, so ensure its directory exists
 mkdir -p "$(dirname "$SPOTIPY_CACHE_PATH")"

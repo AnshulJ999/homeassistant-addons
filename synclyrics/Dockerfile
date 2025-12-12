@@ -18,6 +18,7 @@ RUN \
     libffi-dev \
     alsa-lib-dev \
     portaudio-dev \
+    ffmpeg \
     cargo \
     rust
 
