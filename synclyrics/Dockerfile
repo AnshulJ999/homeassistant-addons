@@ -15,7 +15,10 @@ RUN \
     musl-dev \
     jpeg-dev \
     zlib-dev \
-    libffi-dev
+    libffi-dev \
+    alsa-lib-dev \
+    cargo \
+    rust
 
 WORKDIR /app
 
