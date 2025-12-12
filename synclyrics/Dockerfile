@@ -17,6 +17,7 @@ RUN \
     zlib-dev \
     libffi-dev \
     alsa-lib-dev \
+    portaudio-dev \
     cargo \
     rust
 
