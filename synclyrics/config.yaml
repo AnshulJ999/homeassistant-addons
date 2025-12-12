@@ -26,6 +26,8 @@ options:
   spotify_cache_path: "/config/.spotify_cache"  # Persistent storage for Spotify tokens (in addon_config)
   debug: false  # Enable debug mode for troubleshooting
   log_level: "INFO"  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  spotify_polling_fast_interval: 2.0   # Seconds between polls in Spotify-only mode
+  spotify_polling_slow_interval: 6.0   # Seconds between polls in hybrid/paused mode
 schema:
   spotify_client_id: str
   spotify_client_secret: str
@@ -38,6 +40,8 @@ schema:
   spotify_cache_path: str
   debug: bool
   log_level: str
+  spotify_polling_fast_interval: "float?"
+  spotify_polling_slow_interval: "float?"
 # ports:
 #   9012/tcp: 9012
 host_network: true

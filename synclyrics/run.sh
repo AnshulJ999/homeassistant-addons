@@ -21,6 +21,8 @@ export LASTFM_API_KEY=$(get_config 'lastfm_api_key')
 export FANART_TV_API_KEY=$(get_config 'fanart_tv_api_key')
 export AUDIODB_API_KEY=$(get_config 'audiodb_api_key')
 export SERVER_PORT=$(get_config 'server_port')
+export SPOTIFY_POLLING_FAST_INTERVAL=$(get_config 'spotify_polling_fast_interval')
+export SPOTIFY_POLLING_SLOW_INTERVAL=$(get_config 'spotify_polling_slow_interval')
 
 # Validate required credentials
 # Check if Spotify credentials are configured before proceeding
