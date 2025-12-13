@@ -2,6 +2,8 @@
 
 Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
 
+Currently only works with Spotify and Windows
+
 **Main Repository:** [github.com/AnshulJ999/SyncLyrics](https://github.com/AnshulJ999/SyncLyrics)
 
 ---
@@ -42,8 +44,10 @@ Real-time synchronized lyrics for your smart home. A feature-rich application th
 5. Configure the addon (see Configuration section below)
 6. Start the addon
 7. Access via:
-   - **Ingress:** Click "Open Web UI" in the addon page
+   - **Ingress:** Click "Open Web UI" in the addon page (may not work correctly)
    - **Direct URL:** `http://<YOUR_HA_IP>:9012`
+
+You can also use the mDNS URL: `http://synclyrics.local:9012`
 
 ---
 
@@ -81,8 +85,19 @@ All options are configured through the Home Assistant addon configuration panel.
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `spotify_polling_fast_interval` | `2.0` | Seconds between polls in Spotify-only mode |
-| `spotify_polling_slow_interval` | `6.0` | Seconds between polls in hybrid/paused mode |
+| `spotify_polling_fast_interval` | `2.0` | Seconds between polls in Spotify-playback mode |
+| `spotify_polling_slow_interval` | `6.0` | Seconds between polls in paused mode |
+
+### HTTPS (Required for Browser Microphone)
+
+To use the browser microphone for audio recognition, HTTPS is required.
+
+HTTPS is **enabled by default** for browser microphone access:
+
+- **HTTP:** `http://<YOUR_HA_IP>:9012` (for local use)
+- **HTTPS:** `https://<YOUR_HA_IP>:9013` (for mic access on tablets/phones)
+
+The app auto-generates a self-signed certificate. You'll need to accept the browser's security warning on first use.
 
 ---
 
