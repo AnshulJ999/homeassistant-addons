@@ -34,12 +34,15 @@ RUN sed -i '/winsdk/d' requirements.txt && \
     sed -i '/desktop-notifier/d' requirements.txt && \
     echo "spotipy" >> requirements.txt
 
+# Remove conflicting system Python packages (Alpine may ship old Quart 0.18.x)
+RUN apk del py3-quart py3-werkzeug py3-flask py3-blinker 2>/dev/null || true
+
 # Note: The main SyncLyrics codebase now has native support for HAOS persistence
 # via environment variables (SYNCLYRICS_LYRICS_DB, SYNCLYRICS_ALBUM_ART_DB, etc.)
 # No patching needed - the run.sh script exports these variables and the app uses them directly
 
 # Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
+RUN pip3 install --no-cache-dir --upgrade -r requirements.txt --break-system-packages
 
 # Copy run script (Local override if needed, or use the one from repo if you commit it)
 COPY run.sh /run.sh

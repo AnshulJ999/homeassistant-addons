@@ -1,5 +1,5 @@
 name: "SyncLyrics"
-version: "1.3.2"
+version: "1.3.3"
 slug: "synclyrics"
 init: false
 description: "Real-time synchronized lyrics for your smart home."
