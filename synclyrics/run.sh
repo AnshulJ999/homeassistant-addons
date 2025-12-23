@@ -24,12 +24,11 @@ export SERVER_PORT=$(get_config 'server_port')
 export SPOTIFY_POLLING_FAST_INTERVAL=$(get_config 'spotify_polling_fast_interval')
 export SPOTIFY_POLLING_SLOW_INTERVAL=$(get_config 'spotify_polling_slow_interval')
 
-# Validate required credentials
-# Check if Spotify credentials are configured before proceeding
+# Check if Spotify credentials are configured
 if [ -z "$SPOTIFY_CLIENT_ID" ] || [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
-    echo "ERROR: Spotify credentials not configured!"
-    echo "Please set spotify_client_id and spotify_client_secret in the add-on configuration."
-    exit 1
+    echo "WARNING: Spotify credentials not configured!"
+    echo "Spotify features will be unavailable. You can still use other audio sources (Spicetify, Shazam, etc.)."
+    echo "To enable Spotify, set spotify_client_id and spotify_client_secret in the add-on configuration."
 fi
 
 # Debug and logging configuration
