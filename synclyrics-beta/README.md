@@ -1,6 +1,6 @@
-# SyncLyrics Home Assistant Addon
+# SyncLyrics BETA Home Assistant Addon
 
-Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
+BETA VERSION - Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
 
 Currently only works with Spotify and Windows
 

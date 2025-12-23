@@ -2,7 +2,7 @@ ARG BUILD_FROM
 FROM $BUILD_FROM
 
 # Build Argument for Branch (Default: main)
-ARG BRANCH=development
+ARG BRANCH=Docker
 
 # Install requirements for add-on + git to clone the app
 RUN \
@@ -12,6 +12,8 @@ RUN \
     jq \
     git \
     gcc \
+    g++ \
+    gfortran \
     musl-dev \
     jpeg-dev \
     zlib-dev \
@@ -20,11 +22,13 @@ RUN \
     portaudio-dev \
     ffmpeg \
     cargo \
-    rust
+    rust \
+    openblas-dev \
+    lapack-dev
 
 WORKDIR /app
 
-# Clone the latest Stable code from GitHub
+# Clone the latest Development code from GitHub
 RUN git clone -b ${BRANCH} https://github.com/AnshulJ999/SyncLyrics.git .
 
 # Remove Desktop/Windows dependencies that break Headless Linux

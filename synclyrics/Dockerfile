@@ -12,6 +12,8 @@ RUN \
     jq \
     git \
     gcc \
+    g++ \
+    gfortran \
     musl-dev \
     jpeg-dev \
     zlib-dev \
@@ -20,7 +22,9 @@ RUN \
     portaudio-dev \
     ffmpeg \
     cargo \
-    rust
+    rust \
+    openblas-dev \
+    lapack-dev
 
 WORKDIR /app
 
