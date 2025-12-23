@@ -1,0 +1,59 @@
+name: "SyncLyrics BETA"
+version: "1.3.3"
+slug: "synclyrics-beta"
+init: false
+description: "Real-time synchronized lyrics for your smart home."
+url: "https://github.com/AnshulJ999/SyncLyrics"
+arch:
+  - aarch64
+  - amd64
+  - armv7
+  - armhf
+  - i386
+startup: application
+boot: auto
+map:
+  - "addon_config:rw"  # Maps to /addon_configs/synclyrics on host, appears as /config in container
+backup_exclude:
+  - "**/album_art_database"
+  - "**/cache"
+  - "**/*.db"
+  - "album_art_database"     # Excludes the entire folder
+  - "cache"                  # Excludes the entire folder
+  - "*.db"                   # Excludes .db files
+
+options:
+  spotify_client_id: ""
+  spotify_client_secret: ""
+  spotify_redirect_uri: "http://homeassistant.local:9012/callback"
+  spotify_base_url: "https://fake-spotify-lyrics-api-azure.vercel.app"
+  lastfm_api_key: ""
+  fanart_tv_api_key: ""  # Optional - for high-quality artist images (get key at https://fanart.tv/)
+  audiodb_api_key: ""  # Optional - backup source for artist images
+  server_port: 9012
+  spotify_cache_path: "/config/.spotify_cache"  # Persistent storage for Spotify tokens (in addon_config)
+  debug: false  # Enable debug mode for troubleshooting
+  log_level: "INFO"  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  spotify_polling_fast_interval: 2.0   # Seconds between polls in Spotify-only mode
+  spotify_polling_slow_interval: 6.0   # Seconds between polls in hybrid/paused mode
+schema:
+  spotify_client_id: str
+  spotify_client_secret: str
+  spotify_redirect_uri: str
+  spotify_base_url: str
+  lastfm_api_key: str
+  fanart_tv_api_key: str
+  audiodb_api_key: str
+  server_port: int
+  spotify_cache_path: str
+  debug: bool
+  log_level: str
+  spotify_polling_fast_interval: "float?"
+  spotify_polling_slow_interval: "float?"
+# ports:
+#   9012/tcp: 9012
+host_network: true
+ingress: true
+ingress_port: 9012
+ingress_entry: /
+panel_icon: "mdi:music-note-text"
