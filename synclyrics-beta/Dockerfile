@@ -13,7 +13,6 @@ RUN \
     git \
     gcc \
     g++ \
-    gfortran \
     musl-dev \
     jpeg-dev \
     zlib-dev \
@@ -23,19 +22,21 @@ RUN \
     ffmpeg \
     cargo \
     rust \
-    openblas-dev \
-    lapack-dev
+    openblas-dev
 
 WORKDIR /app
 
 # Clone the latest Development code from GitHub
 RUN git clone -b ${BRANCH} https://github.com/AnshulJ999/SyncLyrics.git .
 
-# Remove Desktop/Windows dependencies that break Headless Linux
+# Remove Desktop/Windows dependencies and heavy libraries not needed for headless Linux
 RUN sed -i '/winsdk/d' requirements.txt && \
     sed -i '/pywin32/d' requirements.txt && \
     sed -i '/pystray/d' requirements.txt && \
     sed -i '/desktop-notifier/d' requirements.txt && \
+    sed -i '/matplotlib/d' requirements.txt && \
+    sed -i '/scipy/d' requirements.txt && \
+    sed -i '/psutil/d' requirements.txt && \
     echo "spotipy" >> requirements.txt
 
 # Remove conflicting system Python packages (Alpine may ship old Quart 0.18.x)
