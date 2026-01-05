@@ -2,7 +2,7 @@
 
 Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
 
-Currently only works with Spotify and Windows
+Works with Spotify on all platforms. Windows users also get Windows Media integration. Can work on Linux, and also has Docker support.
 
 **Main Repository:** [github.com/AnshulJ999/SyncLyrics](https://github.com/AnshulJ999/SyncLyrics)
 
@@ -11,7 +11,8 @@ Currently only works with Spotify and Windows
 ## ✨ Features
 
 ### 🎵 Lyrics
-- **4 Providers:** Spotify, LRCLib, NetEase, QQ Music
+- **5 Providers:** Spotify, LRCLib, Musixmatch, NetEase, QQ Music
+- **Word-Sync (Karaoke):** Highlights each word as it's sung
 - **Parallel Search:** Queries all providers simultaneously for fastest results
 - **Local Caching:** Saves lyrics offline for instant future access
 - **Provider Selection:** Manually choose your preferred provider per song

@@ -9,7 +9,7 @@ A collection of personal Home Assistant addons.
 A feature-rich application that displays synchronized lyrics for your currently playing music. Fetches real-time lyrics from multiple providers and displays them in a beautiful web interface accessible from any device on your network.
 
 **Key Features:**
-- 🎵 **4 Lyrics Providers:** Spotify, LRCLib, NetEase, QQ Music
+- 🎵 **5 Lyrics Providers:** Spotify, LRCLib, Musixmatch, NetEase, QQ Music
 - 🎨 **Visual Modes:** Sharp, Soft, and Blur album art backgrounds
 - 🎤 **Audio Recognition:** Shazam-powered song identification
 - 🎛️ **Playback Controls:** Play/pause, skip, like, queue display
