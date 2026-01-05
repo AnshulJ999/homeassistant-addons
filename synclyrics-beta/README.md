@@ -1,6 +1,6 @@
-# SyncLyrics BETA Home Assistant Addon
+# SyncLyrics Home Assistant Addon
 
-BETA VERSION - Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
+Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
 
 Currently only works with Spotify and Windows
 
@@ -48,6 +48,8 @@ Currently only works with Spotify and Windows
    - **Direct URL:** `http://<YOUR_HA_IP>:9012`
 
 You can also use the mDNS URL: `http://synclyrics.local:9012`
+
+Home assistant's mDNS URL should also work: `http://homeassistant.local:9012`
 
 ---
 
@@ -108,8 +110,12 @@ To use Spotify features, you need to create a Spotify Developer App:
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
 2. Create a new app
 3. Set the **Redirect URI** to match your Home Assistant URL:
-   - Example: `http://homeassistant.local:9012/callback`
-   - Or: `http://192.168.1.100:9012/callback`
+   - Example: `https://<YOUR_HA_IP>:9013/callback`
+
+**Important**: HTTPS is required by Spotify for authentication now. The app enables HTTPS by default on port 9013 for this purpose; you'll need to accept the security warning for the self-signed certificates to proceed. 
+
+If you have another method to access HTTPS (such as HASS behind an HTTPS proxy), you can use that directly as well. 
+
 4. Copy the **Client ID** and **Client Secret** to the addon configuration
 5. Restart the addon
 
@@ -118,7 +124,7 @@ To use Spotify features, you need to create a Spotify Developer App:
 ⚠️ **Important**: For initial OAuth authentication, access the addon **directly via port** (not through Ingress):
 
 ```
-http://<YOUR_HA_IP>:9012
+https://<YOUR_HA_IP>:9013
 ```
 
 Click the Spotify login link and authorize the application. After successful authentication, you can use either direct access or Ingress.
@@ -129,8 +135,7 @@ Click the Spotify login link and authorize the application. After successful aut
 
 | Method | URL | Best For |
 |--------|-----|----------|
-| **Ingress** | Click "Open Web UI" in addon panel | Internal use after OAuth |
-| **Direct** | `http://<HA_IP>:9012` | Initial OAuth, external access, tablets |
+| **Direct** | `http://<HA_IP>:9012` | External access, tablets |
 
 ### URL Parameters
 
