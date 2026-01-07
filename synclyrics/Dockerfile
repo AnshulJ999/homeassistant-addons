@@ -60,13 +60,17 @@ FROM $BUILD_FROM
 WORKDIR /app
 
 # Install runtime dependencies only (no build tools)
+# Note: libjpeg-turbo, zlib, libffi are needed at runtime for Pillow, compression, and cffi
 RUN apk add --no-cache \
         python3 \
         py3-pip \
         jq \
         ffmpeg \
         alsa-lib \
-        portaudio
+        portaudio \
+        libjpeg-turbo \
+        zlib \
+        libffi
 
 # Copy Python site-packages from builder
 # Note: Alpine uses /usr/lib/python3.x/site-packages
