@@ -1,35 +1,40 @@
+# SyncLyrics Home Assistant Add-on
+# Multi-stage build for optimized image size
+# https://github.com/AnshulJ999/SyncLyrics
+
+# ============================================
+# STAGE 1: Builder
+# Install build tools, compile Python packages
+# ============================================
 ARG BUILD_FROM
-FROM $BUILD_FROM
+FROM $BUILD_FROM AS builder
 
-# Build Argument for Branch (Default: main)
 ARG BRANCH=main
-
-# Install requirements for add-on + git to clone the app
-RUN \
-    apk add --no-cache \
-    python3 \
-    py3-pip \
-    jq \
-    git \
-    gcc \
-    g++ \
-    musl-dev \
-    jpeg-dev \
-    zlib-dev \
-    libffi-dev \
-    alsa-lib-dev \
-    portaudio-dev \
-    ffmpeg \
-    cargo \
-    rust \
-    openblas-dev
 
 WORKDIR /app
 
-# Clone the latest Stable code from GitHub
-RUN git clone -b ${BRANCH} https://github.com/AnshulJ999/SyncLyrics.git .
+# Install build dependencies (will be discarded in final stage)
+RUN apk add --no-cache --virtual .build-deps \
+        gcc \
+        g++ \
+        musl-dev \
+        cargo \
+        rust \
+        openblas-dev \
+        jpeg-dev \
+        zlib-dev \
+        libffi-dev
 
-# Remove Desktop/Windows dependencies and heavy libraries not needed for headless Linux
+# Install runtime dependencies that are also needed for building
+RUN apk add --no-cache \
+        python3 \
+        py3-pip \
+        git
+
+# Clone SyncLyrics from GitHub
+RUN git clone -b ${BRANCH} --depth 1 https://github.com/AnshulJ999/SyncLyrics.git .
+
+# Remove Windows/desktop dependencies not needed for headless Linux
 RUN sed -i '/winsdk/d' requirements.txt && \
     sed -i '/pywin32/d' requirements.txt && \
     sed -i '/pystray/d' requirements.txt && \
@@ -40,17 +45,37 @@ RUN sed -i '/winsdk/d' requirements.txt && \
     sed -i '/psutil/d' requirements.txt && \
     echo "spotipy" >> requirements.txt
 
-# Remove conflicting system Python packages (Alpine may ship old Quart 0.18.x)
+# Remove conflicting system Python packages
 RUN apk del py3-quart py3-werkzeug py3-flask py3-blinker 2>/dev/null || true
-
-# Note: The main SyncLyrics codebase now has native support for HAOS persistence
-# via environment variables (SYNCLYRICS_LYRICS_DB, SYNCLYRICS_ALBUM_ART_DB, etc.)
-# No patching needed - the run.sh script exports these variables and the app uses them directly
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir --upgrade -r requirements.txt --break-system-packages
 
-# Copy run script (Local override if needed, or use the one from repo if you commit it)
+# ============================================
+# STAGE 2: Runtime
+# Lean image with only runtime dependencies
+# ============================================
+FROM $BUILD_FROM
+
+WORKDIR /app
+
+# Install runtime dependencies only (no build tools)
+RUN apk add --no-cache \
+        python3 \
+        py3-pip \
+        jq \
+        ffmpeg \
+        alsa-lib \
+        portaudio
+
+# Copy Python site-packages from builder
+# Note: Alpine uses /usr/lib/python3.x/site-packages
+COPY --from=builder /usr/lib/python3.12/site-packages /usr/lib/python3.12/site-packages
+
+# Copy application code from builder
+COPY --from=builder /app /app
+
+# Copy run script
 COPY run.sh /run.sh
 RUN tr -d '\r' < /run.sh > /run.sh.tmp && mv /run.sh.tmp /run.sh && chmod a+x /run.sh
 

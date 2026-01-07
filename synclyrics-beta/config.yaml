@@ -1,15 +1,13 @@
 name: "SyncLyrics BETA"
-version: "1.8.0"
+version: "1.8.1-beta"
 slug: "synclyrics-beta"
+image: ghcr.io/anshulj999/synclyrics-ha-beta-{arch}
 init: false
 description: "Real-time synchronized lyrics for your smart home."
 url: "https://github.com/AnshulJ999/SyncLyrics"
 arch:
-  - aarch64
   - amd64
-  - armv7
-  - armhf
-  - i386
+  - aarch64
 startup: application
 boot: auto
 map:
