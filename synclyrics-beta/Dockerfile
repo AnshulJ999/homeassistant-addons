@@ -2,7 +2,7 @@ ARG BUILD_FROM
 FROM $BUILD_FROM
 
 # Build Argument for Branch (Default: main)
-ARG BRANCH=Fixes1
+ARG BRANCH=development
 
 # Install requirements for add-on + git to clone the app
 RUN \
