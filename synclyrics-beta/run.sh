@@ -78,6 +78,7 @@ export SYNCLYRICS_SETTINGS_FILE="/config/settings.json"
 # Note: Variable names must match what config.py expects (SYNCLYRICS_LYRICS_DB, not SYNCLYRICS_DATABASE_DIR)
 export SYNCLYRICS_LYRICS_DB="/config/lyrics_database"
 export SYNCLYRICS_ALBUM_ART_DB="/config/album_art_database"
+export SYNCLYRICS_SPICETIFY_DB="/config/spicetify_database"
 
 # 3. Cache - temporary files and cached data
 export SYNCLYRICS_CACHE_DIR="/config/cache"
@@ -94,6 +95,7 @@ export SYNCLYRICS_CERTS_DIR="/config/certs"
 # Ensure all subdirectories exist
 mkdir -p "$SYNCLYRICS_LYRICS_DB"
 mkdir -p "$SYNCLYRICS_ALBUM_ART_DB"
+mkdir -p "$SYNCLYRICS_SPICETIFY_DB"
 mkdir -p "$SYNCLYRICS_CACHE_DIR"
 mkdir -p "$SYNCLYRICS_LOGS_DIR"
 mkdir -p "$SYNCLYRICS_CERTS_DIR"
