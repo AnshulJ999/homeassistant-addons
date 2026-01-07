@@ -34,6 +34,7 @@ RUN sed -i '/winsdk/d' requirements.txt && \
     sed -i '/pywin32/d' requirements.txt && \
     sed -i '/pystray/d' requirements.txt && \
     sed -i '/desktop-notifier/d' requirements.txt && \
+    sed -i '/pyinstaller/d' requirements.txt && \
     sed -i '/matplotlib/d' requirements.txt && \
     sed -i '/scipy/d' requirements.txt && \
     sed -i '/psutil/d' requirements.txt && \
