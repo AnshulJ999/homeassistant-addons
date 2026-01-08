@@ -1,0 +1,52 @@
+configuration:
+  spotify_client_id:
+    name: "Spotify Client ID"
+    description: "Your Spotify Developer App Client ID"
+  spotify_client_secret:
+    name: "Spotify Client Secret"
+    description: "Your Spotify Developer App Client Secret"
+  spotify_redirect_uri:
+    name: "Spotify Redirect URI"
+    description: "OAuth callback URL (must match Spotify Dashboard exactly)"
+  spotify_base_url:
+    name: "Spotify Lyrics API URL"
+    description: "Lyrics API endpoint (default provided, no change needed)"
+  lastfm_api_key:
+    name: "Last.fm API Key"
+    description: "Optional - Enhances album art quality"
+  fanart_tv_api_key:
+    name: "FanArt.tv API Key"
+    description: "Optional - High-quality artist images (get key at fanart.tv)"
+  audiodb_api_key:
+    name: "TheAudioDB API Key"
+    description: "Optional - Backup source for artist images"
+  server_port:
+    name: "Server Port (HTTP)"
+    description: "Web UI port for HTTP access"
+  spotify_cache_path:
+    name: "Spotify Token Cache Path"
+    description: "Path for persistent Spotify authentication tokens"
+  debug:
+    name: "Debug Mode"
+    description: "Enable verbose logging for troubleshooting"
+  log_level:
+    name: "Log Level"
+    description: "Logging verbosity: DEBUG, INFO, WARNING, ERROR, CRITICAL"
+  spotify_polling_fast_interval:
+    name: "Spotify Polling (Fast)"
+    description: "Seconds between API polls during active playback"
+  spotify_polling_slow_interval:
+    name: "Spotify Polling (Slow)"
+    description: "Seconds between API polls when paused or idle"
+  https_enabled:
+    name: "Enable HTTPS"
+    description: "Enable HTTPS server (required for browser microphone access)"
+  https_port:
+    name: "HTTPS Port"
+    description: "Port for HTTPS access (e.g., https://your-ip:9013)"
+  save_lyrics_locally:
+    name: "Save Lyrics to Database"
+    description: "Cache fetched lyrics locally for offline access and faster loading"
+  album_art_db:
+    name: "Album Art & Image Database"
+    description: "Cache high-quality album art and artist images locally"

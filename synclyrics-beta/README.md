@@ -2,7 +2,7 @@
 
 Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
 
-Currently only works with Spotify and Windows
+Works with Spotify on all platforms. Windows users also get Windows Media integration. Can work on Linux, and also has Docker support.
 
 **Main Repository:** [github.com/AnshulJ999/SyncLyrics](https://github.com/AnshulJ999/SyncLyrics)
 
@@ -11,7 +11,8 @@ Currently only works with Spotify and Windows
 ## ✨ Features
 
 ### 🎵 Lyrics
-- **4 Providers:** Spotify, LRCLib, NetEase, QQ Music
+- **5 Providers:** Spotify, LRCLib, Musixmatch, NetEase, QQ Music
+- **Word-Sync (Karaoke):** Highlights each word as it's sung
 - **Parallel Search:** Queries all providers simultaneously for fastest results
 - **Local Caching:** Saves lyrics offline for instant future access
 - **Provider Selection:** Manually choose your preferred provider per song
@@ -43,9 +44,7 @@ Currently only works with Spotify and Windows
 4. Find **SyncLyrics** in the addon list and click **Install**
 5. Configure the addon (see Configuration section below)
 6. Start the addon
-7. Access via:
-   - **Ingress:** Click "Open Web UI" in the addon page (may not work correctly)
-   - **Direct URL:** `http://<YOUR_HA_IP>:9012`
+7. Access via **Direct URL:** `http://<YOUR_HA_IP>:9012` or `https://<YOUR_HA_IP>:9013`
 
 You can also use the mDNS URL: `http://synclyrics.local:9012`
 
@@ -78,17 +77,26 @@ All options are configured through the Home Assistant addon configuration panel.
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `server_port` | `9012` | Web UI port |
+| `server_port` | `9012` | Web UI port (HTTP) |
+| `https_enabled` | `true` | Enable HTTPS server (required for browser microphone) |
+| `https_port` | `9013` | HTTPS port |
 | `spotify_cache_path` | `/config/.spotify_cache` | Persistent token storage |
 | `debug` | `false` | Enable debug logging |
 | `log_level` | `INFO` | DEBUG, INFO, WARNING, ERROR, CRITICAL |
+
+### Database Settings
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `save_lyrics_locally` | `true` | Cache fetched lyrics locally for offline access |
+| `album_art_db` | `true` | Cache album art and artist images locally |
 
 ### Polling Intervals
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `spotify_polling_fast_interval` | `2.0` | Seconds between polls in Spotify-playback mode |
-| `spotify_polling_slow_interval` | `6.0` | Seconds between polls in paused mode |
+| `spotify_polling_fast_interval` | `2.0` | Seconds between polls during active playback |
+| `spotify_polling_slow_interval` | `6.0` | Seconds between polls when paused or idle |
 
 ### HTTPS (Required for Browser Microphone)
 
@@ -127,7 +135,7 @@ If you have another method to access HTTPS (such as HASS behind an HTTPS proxy),
 https://<YOUR_HA_IP>:9013
 ```
 
-Click the Spotify login link and authorize the application. After successful authentication, you can use either direct access or Ingress.
+Click the Spotify login link and authorize the application.
 
 ---
 
@@ -135,7 +143,8 @@ Click the Spotify login link and authorize the application. After successful aut
 
 | Method | URL | Best For |
 |--------|-----|----------|
-| **Direct** | `http://<HA_IP>:9012` | External access, tablets |
+| **HTTP** | `http://<HA_IP>:9012` | Local network access |
+| **HTTPS** | `https://<HA_IP>:9013` | Browser microphone, Spotify OAuth |
 
 ### URL Parameters
 
