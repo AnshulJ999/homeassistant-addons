@@ -30,6 +30,10 @@ options:
   log_level: "INFO"  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
   spotify_polling_fast_interval: 2.0   # Seconds between polls in Spotify-only mode
   spotify_polling_slow_interval: 6.0   # Seconds between polls in hybrid/paused mode
+  https_enabled: true  # Enable HTTPS server (required for browser microphone access)
+  https_port: 9013  # HTTPS port (access via https://haip:9013)
+  save_lyrics_locally: true  # Save fetched lyrics to local database for offline access
+  album_art_db: true  # Cache album art and artist images locally
 schema:
   spotify_client_id: str
   spotify_client_secret: str
@@ -43,11 +47,17 @@ schema:
   debug: bool
   log_level: str
   spotify_polling_fast_interval: "float?"
+  https_enabled: "bool?"
+  https_port: "int?"
+  save_lyrics_locally: "bool?"
+  album_art_db: "bool?"
   spotify_polling_slow_interval: "float?"
 # ports:
 #   9012/tcp: 9012
 host_network: true
-ingress: true
-ingress_port: 9012
-ingress_entry: /
+# Ingress disabled - SyncLyrics is a JS-heavy SPA that requires direct port access
+# The UI doesn't render properly through HA's ingress proxy due to absolute path issues
+# ingress: true
+# ingress_port: 9012
+# ingress_entry: /
 panel_icon: "mdi:music-note-text"

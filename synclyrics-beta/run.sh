@@ -24,6 +24,14 @@ export SERVER_PORT=$(get_config 'server_port')
 export SPOTIFY_POLLING_FAST_INTERVAL=$(get_config 'spotify_polling_fast_interval')
 export SPOTIFY_POLLING_SLOW_INTERVAL=$(get_config 'spotify_polling_slow_interval')
 
+# HTTPS settings
+export SERVER_HTTPS_ENABLED=$(get_config 'https_enabled')
+export SERVER_HTTPS_PORT=$(get_config 'https_port')
+
+# Database feature toggles
+export FEATURES_SAVE_LYRICS_LOCALLY=$(get_config 'save_lyrics_locally')
+export FEATURES_ALBUM_ART_DB=$(get_config 'album_art_db')
+
 # Check if Spotify credentials are configured
 if [ -z "$SPOTIFY_CLIENT_ID" ] || [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
     echo "WARNING: Spotify credentials not configured!"
