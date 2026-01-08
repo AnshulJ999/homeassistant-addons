@@ -107,7 +107,7 @@ jobs:
           push: true
           platforms: linux/${{ matrix.arch == 'aarch64' && 'arm64' || matrix.arch }}
           build-args: |
-            BUILD_FROM=ghcr.io/home-assistant/${{ matrix.arch }}-base-python:3.12
+            BUILD_FROM=ghcr.io/home-assistant/${{ matrix.arch }}-base-python:3.12-alpine3.21
             BRANCH=${{ steps.params.outputs.branch }}
           tags: |
             ${{ steps.params.outputs.image_name }}:${{ steps.params.outputs.version }}
