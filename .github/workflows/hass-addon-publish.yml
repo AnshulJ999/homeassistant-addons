@@ -1,33 +1,81 @@
 name: Build and Publish HA Add-on Images
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # Manual dispatch - full control over what to build
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version tag (e.g., 1.8.1)'
-        required: true
+      # ========== STABLE BUILD ==========
+      build_stable:
+        description: '🟢 Build STABLE add-on'
+        type: boolean
+        default: true
+      stable_version:
+        description: 'Stable version (e.g., 1.8.1)'
         type: string
-      branch:
-        description: 'SyncLyrics branch to build from (e.g., main, development, feature-branch)'
-        required: true
+        default: '1.8.1'
+      stable_branch:
+        description: 'Stable branch to clone'
+        type: string
         default: 'main'
-        type: string
-      is_beta:
-        description: 'Build as BETA add-on image'
-        required: false
+      
+      # ========== BETA BUILD ==========
+      build_beta:
+        description: '🟡 Build BETA add-on'
         type: boolean
         default: false
+      beta_version:
+        description: 'Beta version (e.g., 1.8.2-beta)'
+        type: string
+        default: '1.8.2-beta'
+      beta_branch:
+        description: 'Beta branch to clone'
+        type: string
+        default: 'development'
 
 env:
   GHCR_REGISTRY: ghcr.io
-  # Note: Must be lowercase for GHCR - github.repository_owner preserves case
+  # Must be lowercase for GHCR
   IMAGE_BASE: ghcr.io/anshulj999/synclyrics-ha
 
 jobs:
+  # ============================================
+  # Prepare build matrix based on user selections
+  # ============================================
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set build matrix
+        id: set-matrix
+        run: |
+          # Build the matrix dynamically based on inputs
+          VARIANTS="[]"
+          
+          if [ "${{ inputs.build_stable }}" == "true" ]; then
+            VARIANTS=$(echo "$VARIANTS" | jq -c '. + [{"variant": "stable", "version": "${{ inputs.stable_version }}", "branch": "${{ inputs.stable_branch }}", "dockerfile": "synclyrics", "image_suffix": ""}]')
+          fi
+          
+          if [ "${{ inputs.build_beta }}" == "true" ]; then
+            VARIANTS=$(echo "$VARIANTS" | jq -c '. + [{"variant": "beta", "version": "${{ inputs.beta_version }}", "branch": "${{ inputs.beta_branch }}", "dockerfile": "synclyrics-beta", "image_suffix": "-beta"}]')
+          fi
+          
+          # Combine with architectures
+          ARCHS='["amd64", "aarch64"]'
+          
+          # Create full matrix
+          MATRIX=$(jq -c -n --argjson variants "$VARIANTS" --argjson archs "$ARCHS" '{include: [($variants[] | . as $v | $archs[] | {variant: $v.variant, version: $v.version, branch: $v.branch, dockerfile: $v.dockerfile, image_suffix: $v.image_suffix, arch: .})]}')
+          
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          echo "📦 Build Matrix:"
+          echo "$MATRIX" | jq .
+
+  # ============================================
+  # Build and push images
+  # ============================================
   build:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.matrix != '{"include":[]}' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,45 +83,11 @@ jobs:
     
     strategy:
       fail-fast: false
-      matrix:
-        arch: [amd64, aarch64]
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     
     steps:
       - name: Checkout homeassistant-addons repository
         uses: actions/checkout@v4
-
-      - name: Determine build parameters
-        id: params
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            # Manual dispatch
-            VERSION="${{ inputs.version }}"
-            BRANCH="${{ inputs.branch }}"
-            IS_BETA="${{ inputs.is_beta }}"
-          else
-            # Tag push - extract version from tag (strip 'v' prefix)
-            RAW_TAG="${GITHUB_REF#refs/tags/}"
-            VERSION="${RAW_TAG#v}"
-            BRANCH="main"
-            IS_BETA="false"
-          fi
-          
-          # Determine image name based on beta flag
-          if [ "$IS_BETA" == "true" ]; then
-            IMAGE_NAME="${{ env.IMAGE_BASE }}-beta-${{ matrix.arch }}"
-          else
-            IMAGE_NAME="${{ env.IMAGE_BASE }}-${{ matrix.arch }}"
-          fi
-          
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
-          echo "is_beta=${IS_BETA}" >> $GITHUB_OUTPUT
-          echo "image_name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
-          
-          # Log for debugging
-          echo "📦 Building: ${IMAGE_NAME}:${VERSION}"
-          echo "🌿 Branch: ${BRANCH}"
-          echo "🔧 Beta: ${IS_BETA}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -88,43 +102,42 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine Dockerfile path
-        id: dockerfile
-        run: |
-          if [ "${{ steps.params.outputs.is_beta }}" == "true" ]; then
-            echo "path=synclyrics-beta/Dockerfile" >> $GITHUB_OUTPUT
-            echo "context=synclyrics-beta" >> $GITHUB_OUTPUT
-          else
-            echo "path=synclyrics/Dockerfile" >> $GITHUB_OUTPUT
-            echo "context=synclyrics" >> $GITHUB_OUTPUT
-          fi
-
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
-          context: ${{ steps.dockerfile.outputs.context }}
-          file: ${{ steps.dockerfile.outputs.path }}
+          context: ${{ matrix.dockerfile }}
+          file: ${{ matrix.dockerfile }}/Dockerfile
           push: true
           platforms: linux/${{ matrix.arch == 'aarch64' && 'arm64' || matrix.arch }}
           build-args: |
             BUILD_FROM=ghcr.io/home-assistant/${{ matrix.arch }}-base-python:3.12-alpine3.21
-            BRANCH=${{ steps.params.outputs.branch }}
+            BRANCH=${{ matrix.branch }}
           tags: |
-            ${{ steps.params.outputs.image_name }}:${{ steps.params.outputs.version }}
-            ${{ steps.params.outputs.image_name }}:latest
+            ${{ env.IMAGE_BASE }}${{ matrix.image_suffix }}-${{ matrix.arch }}:${{ matrix.version }}
+            ${{ env.IMAGE_BASE }}${{ matrix.image_suffix }}-${{ matrix.arch }}:latest
           labels: |
-            org.opencontainers.image.title=SyncLyrics HA Add-on
+            org.opencontainers.image.title=SyncLyrics HA Add-on (${{ matrix.variant }})
             org.opencontainers.image.description=Real-time synchronized lyrics for Home Assistant
-            org.opencontainers.image.version=${{ steps.params.outputs.version }}
+            org.opencontainers.image.version=${{ matrix.version }}
             org.opencontainers.image.source=https://github.com/AnshulJ999/SyncLyrics
             io.hass.type=addon
             io.hass.arch=${{ matrix.arch }}
-          cache-from: type=gha,scope=${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.variant }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant }}-${{ matrix.arch }}
 
+      - name: Job summary
+        run: |
+          echo "### ✅ Built: ${{ matrix.variant }} / ${{ matrix.arch }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** \`${{ env.IMAGE_BASE }}${{ matrix.image_suffix }}-${{ matrix.arch }}:${{ matrix.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ matrix.branch }}\`" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+  # Final summary
+  # ============================================
   summary:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [prepare, build]
     if: always()
     steps:
       - name: Generate build summary
@@ -132,24 +145,31 @@ jobs:
           echo "## 🏠 Home Assistant Add-on Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "**Mode:** Manual Dispatch" >> $GITHUB_STEP_SUMMARY
-            echo "**Version:** ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Branch:** ${{ inputs.branch }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Beta:** ${{ inputs.is_beta }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ inputs.build_stable }}" == "true" ]; then
+            echo "**Stable:** v${{ inputs.stable_version }} from \`${{ inputs.stable_branch }}\`" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Mode:** Tag Push" >> $GITHUB_STEP_SUMMARY
-            echo "**Tag:** ${GITHUB_REF#refs/tags/}" >> $GITHUB_STEP_SUMMARY
+            echo "**Stable:** ⏭️ Skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ inputs.build_beta }}" == "true" ]; then
+            echo "**Beta:** v${{ inputs.beta_version }} from \`${{ inputs.beta_branch }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Beta:** ⏭️ Skipped" >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Published Images" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ inputs.is_beta }}" == "true" ]; then
-            echo "- \`ghcr.io/${{ github.repository_owner }}/synclyrics-ha-beta-amd64\`" >> $GITHUB_STEP_SUMMARY
-            echo "- \`ghcr.io/${{ github.repository_owner }}/synclyrics-ha-beta-aarch64\`" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- \`ghcr.io/${{ github.repository_owner }}/synclyrics-ha-amd64\`" >> $GITHUB_STEP_SUMMARY
-            echo "- \`ghcr.io/${{ github.repository_owner }}/synclyrics-ha-aarch64\`" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ inputs.build_stable }}" == "true" ]; then
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-amd64:${{ inputs.stable_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-aarch64:${{ inputs.stable_version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ inputs.build_beta }}" == "true" ]; then
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-beta-amd64:${{ inputs.beta_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-beta-aarch64:${{ inputs.beta_version }}\`" >> $GITHUB_STEP_SUMMARY
           fi
