@@ -20,10 +20,12 @@ RUN apk add --no-cache --virtual .build-deps \
         musl-dev \
         cargo \
         rust \
+        pkgconf \
         openblas-dev \
         jpeg-dev \
         zlib-dev \
-        libffi-dev
+        libffi-dev \
+        alsa-lib-dev
 
 # Install runtime dependencies that are also needed for building
 RUN apk add --no-cache \
