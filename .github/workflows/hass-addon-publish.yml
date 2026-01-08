@@ -10,9 +10,9 @@ on:
         type: boolean
         default: true
       stable_version:
-        description: 'Stable version (e.g., 1.8.1)'
+        description: 'Stable version (leave empty to use config.yaml)'
         type: string
-        default: '1.8.1'
+        default: ''
       stable_branch:
         description: 'Stable branch to clone'
         type: string
@@ -24,9 +24,9 @@ on:
         type: boolean
         default: false
       beta_version:
-        description: 'Beta version (e.g., 1.8.2-beta)'
+        description: 'Beta version (leave empty to use config.yaml)'
         type: string
-        default: '1.8.2-beta'
+        default: ''
       beta_branch:
         description: 'Beta branch to clone'
         type: string
@@ -45,19 +45,52 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      stable_version: ${{ steps.read-versions.outputs.stable_version }}
+      beta_version: ${{ steps.read-versions.outputs.beta_version }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read versions from config.yaml
+        id: read-versions
+        run: |
+          # Read stable version: use input if provided, otherwise read from config.yaml
+          if [ -n "${{ inputs.stable_version }}" ]; then
+            STABLE_VERSION="${{ inputs.stable_version }}"
+            echo "📦 Stable version (from input): $STABLE_VERSION"
+          else
+            STABLE_VERSION=$(grep '^version:' synclyrics/config.yaml | head -1 | sed 's/version: *"\(.*\)"/\1/')
+            echo "📦 Stable version (from config.yaml): $STABLE_VERSION"
+          fi
+          
+          # Read beta version: use input if provided, otherwise read from config.yaml
+          if [ -n "${{ inputs.beta_version }}" ]; then
+            BETA_VERSION="${{ inputs.beta_version }}"
+            echo "📦 Beta version (from input): $BETA_VERSION"
+          else
+            BETA_VERSION=$(grep '^version:' synclyrics-beta/config.yaml | head -1 | sed 's/version: *"\(.*\)"/\1/')
+            echo "📦 Beta version (from config.yaml): $BETA_VERSION"
+          fi
+          
+          echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
+          echo "beta_version=$BETA_VERSION" >> $GITHUB_OUTPUT
+
       - name: Set build matrix
         id: set-matrix
         run: |
+          # Get versions from previous step
+          STABLE_VERSION="${{ steps.read-versions.outputs.stable_version }}"
+          BETA_VERSION="${{ steps.read-versions.outputs.beta_version }}"
+          
           # Build the matrix dynamically based on inputs
           VARIANTS="[]"
           
           if [ "${{ inputs.build_stable }}" == "true" ]; then
-            VARIANTS=$(echo "$VARIANTS" | jq -c '. + [{"variant": "stable", "version": "${{ inputs.stable_version }}", "branch": "${{ inputs.stable_branch }}", "dockerfile": "synclyrics", "image_suffix": ""}]')
+            VARIANTS=$(echo "$VARIANTS" | jq -c --arg ver "$STABLE_VERSION" --arg branch "${{ inputs.stable_branch }}" '. + [{"variant": "stable", "version": $ver, "branch": $branch, "dockerfile": "synclyrics", "image_suffix": ""}]')
           fi
           
           if [ "${{ inputs.build_beta }}" == "true" ]; then
-            VARIANTS=$(echo "$VARIANTS" | jq -c '. + [{"variant": "beta", "version": "${{ inputs.beta_version }}", "branch": "${{ inputs.beta_branch }}", "dockerfile": "synclyrics-beta", "image_suffix": "-beta"}]')
+            VARIANTS=$(echo "$VARIANTS" | jq -c --arg ver "$BETA_VERSION" --arg branch "${{ inputs.beta_branch }}" '. + [{"variant": "beta", "version": $ver, "branch": $branch, "dockerfile": "synclyrics-beta", "image_suffix": "-beta"}]')
           fi
           
           # Combine with architectures
@@ -149,13 +182,13 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ "${{ inputs.build_stable }}" == "true" ]; then
-            echo "**Stable:** v${{ inputs.stable_version }} from \`${{ inputs.stable_branch }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Stable:** v${{ needs.prepare.outputs.stable_version }} from \`${{ inputs.stable_branch }}\`" >> $GITHUB_STEP_SUMMARY
           else
             echo "**Stable:** ⏭️ Skipped" >> $GITHUB_STEP_SUMMARY
           fi
           
           if [ "${{ inputs.build_beta }}" == "true" ]; then
-            echo "**Beta:** v${{ inputs.beta_version }} from \`${{ inputs.beta_branch }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Beta:** v${{ needs.prepare.outputs.beta_version }} from \`${{ inputs.beta_branch }}\`" >> $GITHUB_STEP_SUMMARY
           else
             echo "**Beta:** ⏭️ Skipped" >> $GITHUB_STEP_SUMMARY
           fi
@@ -165,11 +198,11 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ "${{ inputs.build_stable }}" == "true" ]; then
-            echo "- \`ghcr.io/anshulj999/synclyrics-ha-amd64:${{ inputs.stable_version }}\`" >> $GITHUB_STEP_SUMMARY
-            echo "- \`ghcr.io/anshulj999/synclyrics-ha-aarch64:${{ inputs.stable_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-amd64:${{ needs.prepare.outputs.stable_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-aarch64:${{ needs.prepare.outputs.stable_version }}\`" >> $GITHUB_STEP_SUMMARY
           fi
           
           if [ "${{ inputs.build_beta }}" == "true" ]; then
-            echo "- \`ghcr.io/anshulj999/synclyrics-ha-beta-amd64:${{ inputs.beta_version }}\`" >> $GITHUB_STEP_SUMMARY
-            echo "- \`ghcr.io/anshulj999/synclyrics-ha-beta-aarch64:${{ inputs.beta_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-beta-amd64:${{ needs.prepare.outputs.beta_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-beta-aarch64:${{ needs.prepare.outputs.beta_version }}\`" >> $GITHUB_STEP_SUMMARY
           fi
