@@ -78,8 +78,8 @@ RUN apk add --no-cache \
 # Copy Python packages from builder (version-agnostic)
 COPY --from=builder /install /install
 
-# Set PYTHONPATH so Python finds the installed packages
-ENV PYTHONPATH=/install
+# Set PYTHONPATH so Python finds the installed packages (append to existing)
+ENV PYTHONPATH="/install${PYTHONPATH:+:$PYTHONPATH}"
 
 # Copy application code from builder
 COPY --from=builder /app /app
