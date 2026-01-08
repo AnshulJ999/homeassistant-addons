@@ -10,22 +10,22 @@ configuration:
     description: "OAuth callback URL (must match Spotify Dashboard exactly)"
   spotify_base_url:
     name: "Spotify Lyrics API URL"
-    description: "Lyrics API endpoint (default provided, no change needed)"
+    description: "Spotify Lyrics API endpoint - if you self-host a Spotify lyrics server"
   lastfm_api_key:
     name: "Last.fm API Key"
-    description: "Optional - Enhances album art quality"
+    description: "Optional - Gets Album Art from LastFM"
   fanart_tv_api_key:
     name: "FanArt.tv API Key"
-    description: "Optional - High-quality artist images (get key at fanart.tv)"
+    description: "Optional - Gets Artist Images from FanArt.tv"
   audiodb_api_key:
     name: "TheAudioDB API Key"
-    description: "Optional - Backup source for artist images"
+    description: "Optional - Backup source for artist images - works by default with test '123'"
   server_port:
     name: "Server Port (HTTP)"
-    description: "Web UI port for HTTP access"
+    description: "Web UI port for HTTP access. No need to change usually."
   spotify_cache_path:
     name: "Spotify Token Cache Path"
-    description: "Path for persistent Spotify authentication tokens"
+    description: "Path for persistent Spotify authentication tokens. Default works fine."
   debug:
     name: "Debug Mode"
     description: "Enable verbose logging for troubleshooting"
@@ -48,5 +48,5 @@ configuration:
     name: "Save Lyrics to Database"
     description: "Cache fetched lyrics locally for offline access and faster loading"
   album_art_db:
-    name: "Album Art & Image Database"
-    description: "Cache high-quality album art and artist images locally"
+    name: "Album Art & Artist Image Database"
+    description: "Cache high-quality album art and artist images locally. Needed for slideshow."
