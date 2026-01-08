@@ -48,8 +48,9 @@ RUN sed -i '/winsdk/d' requirements.txt && \
 # Remove conflicting system Python packages
 RUN apk del py3-quart py3-werkzeug py3-flask py3-blinker 2>/dev/null || true
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir --upgrade -r requirements.txt --break-system-packages
+# Install Python dependencies to a neutral /install folder (version-agnostic)
+# This avoids hardcoding Python version in COPY paths
+RUN pip3 install --no-cache-dir --upgrade --target=/install -r requirements.txt --break-system-packages
 
 # ============================================
 # STAGE 2: Runtime
@@ -60,7 +61,7 @@ FROM $BUILD_FROM
 WORKDIR /app
 
 # Install runtime dependencies only (no build tools)
-# Note: libjpeg-turbo, zlib, libffi are needed at runtime for Pillow, compression, and cffi
+# Note: libjpeg-turbo, zlib, libffi, openblas are needed at runtime
 RUN apk add --no-cache \
         python3 \
         py3-pip \
@@ -70,11 +71,14 @@ RUN apk add --no-cache \
         portaudio \
         libjpeg-turbo \
         zlib \
-        libffi
+        libffi \
+        openblas
 
-# Copy Python site-packages from builder
-# Note: Alpine uses /usr/lib/python3.x/site-packages
-COPY --from=builder /usr/lib/python3.12/site-packages /usr/lib/python3.12/site-packages
+# Copy Python packages from builder (version-agnostic)
+COPY --from=builder /install /install
+
+# Set PYTHONPATH so Python finds the installed packages
+ENV PYTHONPATH=/install
 
 # Copy application code from builder
 COPY --from=builder /app /app
