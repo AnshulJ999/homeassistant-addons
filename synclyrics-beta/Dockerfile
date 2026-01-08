@@ -26,7 +26,8 @@ RUN apk add --no-cache --virtual .build-deps \
         jpeg-dev \
         zlib-dev \
         libffi-dev \
-        alsa-lib-dev
+        alsa-lib-dev \
+        portaudio-dev
 
 # Install runtime dependencies that are also needed for building
 RUN apk add --no-cache \
