@@ -32,6 +32,13 @@ export SERVER_HTTPS_PORT=$(get_config 'https_port')
 export FEATURES_SAVE_LYRICS_LOCALLY=$(get_config 'save_lyrics_locally')
 export FEATURES_ALBUM_ART_DB=$(get_config 'album_art_db')
 
+# Music Assistant Integration
+# Note: Variable names must match what config.py expects (key.upper().replace('.', '_'))
+export SYSTEM_MUSIC_ASSISTANT_SERVER_URL=$(get_config 'music_assistant_server_url')
+export SYSTEM_MUSIC_ASSISTANT_TOKEN=$(get_config 'music_assistant_token')
+export SYSTEM_MUSIC_ASSISTANT_PLAYER_ID=$(get_config 'music_assistant_player_id')
+
+
 # Check if Spotify credentials are configured
 if [ -z "$SPOTIFY_CLIENT_ID" ] || [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
     echo "WARNING: Spotify credentials not configured!"
