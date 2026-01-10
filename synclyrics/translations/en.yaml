@@ -50,3 +50,12 @@ configuration:
   album_art_db:
     name: "Album Art & Artist Image Database"
     description: "Cache high-quality album art and artist images locally. Needed for slideshow."
+  music_assistant_server_url:
+    name: "Music Assistant Server URL"
+    description: "Music Assistant server URL (e.g., http://192.168.1.100:8095)"
+  music_assistant_token:
+    name: "Music Assistant API Token"
+    description: "API token from Music Assistant (Settings → Security)"
+  music_assistant_player_id:
+    name: "Music Assistant Player ID"
+    description: "Specific player ID (leave empty to auto-detect first active player)"
