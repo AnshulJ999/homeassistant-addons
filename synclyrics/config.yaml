@@ -1,5 +1,5 @@
 name: "SyncLyrics"
-version: "1.8.2"
+version: "1.9.0"
 slug: "synclyrics"
 image: ghcr.io/anshulj999/synclyrics-ha-{arch}
 init: false
