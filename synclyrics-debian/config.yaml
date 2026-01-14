@@ -1,5 +1,5 @@
 name: "SyncLyrics (Debian)"
-version: "1.9.2"
+version: "1.9.3"
 slug: "synclyrics-debian"
 image: ghcr.io/anshulj999/synclyrics-ha-debian-{arch}
 init: false
