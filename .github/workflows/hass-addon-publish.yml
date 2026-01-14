@@ -7,6 +7,7 @@ on:
     paths:
       - 'synclyrics/config.yaml'
       - 'synclyrics-beta/config.yaml'
+      - 'synclyrics-debian/config.yaml'
   
   # Manual dispatch - full control over what to build
   workflow_dispatch:
@@ -38,6 +39,20 @@ on:
         description: 'Beta branch to clone'
         type: string
         default: 'development'
+      
+      # ========== DEBIAN BUILD ==========
+      build_debian:
+        description: '🔵 Build DEBIAN add-on (glibc for server compatibility)'
+        type: boolean
+        default: false
+      debian_version:
+        description: 'Debian version (leave empty to use config.yaml)'
+        type: string
+        default: ''
+      debian_branch:
+        description: 'Debian branch to clone'
+        type: string
+        default: 'main'
 
 env:
   GHCR_REGISTRY: ghcr.io
@@ -53,8 +68,10 @@ jobs:
     outputs:
       stable_changed: ${{ steps.check.outputs.stable_changed }}
       beta_changed: ${{ steps.check.outputs.beta_changed }}
+      debian_changed: ${{ steps.check.outputs.debian_changed }}
       stable_version: ${{ steps.check.outputs.stable_version }}
       beta_version: ${{ steps.check.outputs.beta_version }}
+      debian_version: ${{ steps.check.outputs.debian_version }}
       is_push: ${{ github.event_name == 'push' }}
     steps:
       - name: Checkout repository
@@ -79,6 +96,10 @@ jobs:
             OLD_BETA=$(git show HEAD~1:synclyrics-beta/config.yaml 2>/dev/null | grep '^version:' | head -1 | sed 's/version: *"\(.*\)"/\1/' || echo "")
             NEW_BETA=$(grep '^version:' synclyrics-beta/config.yaml | head -1 | sed 's/version: *"\(.*\)"/\1/')
             
+            # Get OLD and NEW versions for debian
+            OLD_DEBIAN=$(git show HEAD~1:synclyrics-debian/config.yaml 2>/dev/null | grep '^version:' | head -1 | sed 's/version: *"\(.*\)"/\1/' || echo "")
+            NEW_DEBIAN=$(grep '^version:' synclyrics-debian/config.yaml | head -1 | sed 's/version: *"\(.*\)"/\1/')
+            
             # Check if versions changed
             if [ "$OLD_STABLE" != "$NEW_STABLE" ] && [ -n "$NEW_STABLE" ]; then
               echo "stable_changed=true" >> $GITHUB_OUTPUT
@@ -96,8 +117,17 @@ jobs:
               echo "⏭️ Beta version unchanged: $NEW_BETA"
             fi
             
+            if [ "$OLD_DEBIAN" != "$NEW_DEBIAN" ] && [ -n "$NEW_DEBIAN" ]; then
+              echo "debian_changed=true" >> $GITHUB_OUTPUT
+              echo "📦 Debian version changed: $OLD_DEBIAN → $NEW_DEBIAN"
+            else
+              echo "debian_changed=false" >> $GITHUB_OUTPUT
+              echo "⏭️ Debian version unchanged: $NEW_DEBIAN"
+            fi
+            
             echo "stable_version=$NEW_STABLE" >> $GITHUB_OUTPUT
             echo "beta_version=$NEW_BETA" >> $GITHUB_OUTPUT
+            echo "debian_version=$NEW_DEBIAN" >> $GITHUB_OUTPUT
             
           else
             echo "🔧 Manual dispatch - using input selections..."
@@ -115,10 +145,18 @@ jobs:
               BETA_VERSION=$(grep '^version:' synclyrics-beta/config.yaml | head -1 | sed 's/version: *"\(.*\)"/\1/')
             fi
             
+            if [ -n "${{ inputs.debian_version }}" ]; then
+              DEBIAN_VERSION="${{ inputs.debian_version }}"
+            else
+              DEBIAN_VERSION=$(grep '^version:' synclyrics-debian/config.yaml | head -1 | sed 's/version: *"\(.*\)"/\1/')
+            fi
+            
             echo "stable_changed=${{ inputs.build_stable }}" >> $GITHUB_OUTPUT
             echo "beta_changed=${{ inputs.build_beta }}" >> $GITHUB_OUTPUT
+            echo "debian_changed=${{ inputs.build_debian }}" >> $GITHUB_OUTPUT
             echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
             echo "beta_version=$BETA_VERSION" >> $GITHUB_OUTPUT
+            echo "debian_version=$DEBIAN_VERSION" >> $GITHUB_OUTPUT
           fi
 
   # ============================================
@@ -126,48 +164,82 @@ jobs:
   # ============================================
   prepare:
     needs: detect-version-changes
-    if: needs.detect-version-changes.outputs.stable_changed == 'true' || needs.detect-version-changes.outputs.beta_changed == 'true'
+    if: needs.detect-version-changes.outputs.stable_changed == 'true' || needs.detect-version-changes.outputs.beta_changed == 'true' || needs.detect-version-changes.outputs.debian_changed == 'true'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       stable_version: ${{ needs.detect-version-changes.outputs.stable_version }}
       beta_version: ${{ needs.detect-version-changes.outputs.beta_version }}
+      debian_version: ${{ needs.detect-version-changes.outputs.debian_version }}
     steps:
       - name: Set build matrix
         id: set-matrix
         run: |
           STABLE_VERSION="${{ needs.detect-version-changes.outputs.stable_version }}"
           BETA_VERSION="${{ needs.detect-version-changes.outputs.beta_version }}"
+          DEBIAN_VERSION="${{ needs.detect-version-changes.outputs.debian_version }}"
           STABLE_CHANGED="${{ needs.detect-version-changes.outputs.stable_changed }}"
           BETA_CHANGED="${{ needs.detect-version-changes.outputs.beta_changed }}"
+          DEBIAN_CHANGED="${{ needs.detect-version-changes.outputs.debian_changed }}"
           
           # Determine branches (use defaults for push, inputs for manual)
           if [ "${{ github.event_name }}" == "push" ]; then
             STABLE_BRANCH="main"
             BETA_BRANCH="development"
+            DEBIAN_BRANCH="main"
           else
             STABLE_BRANCH="${{ inputs.stable_branch }}"
             BETA_BRANCH="${{ inputs.beta_branch }}"
+            DEBIAN_BRANCH="${{ inputs.debian_branch }}"
           fi
           
           # Build the matrix dynamically
           VARIANTS="[]"
           
+          # Stable (Alpine)
           if [ "$STABLE_CHANGED" == "true" ]; then
-            VARIANTS=$(echo "$VARIANTS" | jq -c --arg ver "$STABLE_VERSION" --arg branch "$STABLE_BRANCH" '. + [{"variant": "stable", "version": $ver, "branch": $branch, "dockerfile": "synclyrics", "image_suffix": ""}]')
+            VARIANTS=$(echo "$VARIANTS" | jq -c --arg ver "$STABLE_VERSION" --arg branch "$STABLE_BRANCH" '. + [{
+              "variant": "stable",
+              "version": $ver,
+              "branch": $branch,
+              "dockerfile": "synclyrics",
+              "image_suffix": "",
+              "base_image": "base-python:3.12-alpine3.21"
+            }]')
             echo "📦 Adding stable to build matrix: v$STABLE_VERSION from $STABLE_BRANCH"
           fi
           
+          # Beta (Alpine)
           if [ "$BETA_CHANGED" == "true" ]; then
-            VARIANTS=$(echo "$VARIANTS" | jq -c --arg ver "$BETA_VERSION" --arg branch "$BETA_BRANCH" '. + [{"variant": "beta", "version": $ver, "branch": $branch, "dockerfile": "synclyrics-beta", "image_suffix": "-beta"}]')
+            VARIANTS=$(echo "$VARIANTS" | jq -c --arg ver "$BETA_VERSION" --arg branch "$BETA_BRANCH" '. + [{
+              "variant": "beta",
+              "version": $ver,
+              "branch": $branch,
+              "dockerfile": "synclyrics-beta",
+              "image_suffix": "-beta",
+              "base_image": "base-python:3.12-alpine3.21"
+            }]')
             echo "📦 Adding beta to build matrix: v$BETA_VERSION from $BETA_BRANCH"
+          fi
+          
+          # Debian (glibc)
+          if [ "$DEBIAN_CHANGED" == "true" ]; then
+            VARIANTS=$(echo "$VARIANTS" | jq -c --arg ver "$DEBIAN_VERSION" --arg branch "$DEBIAN_BRANCH" '. + [{
+              "variant": "debian",
+              "version": $ver,
+              "branch": $branch,
+              "dockerfile": "synclyrics-debian",
+              "image_suffix": "-debian",
+              "base_image": "base-debian:bookworm"
+            }]')
+            echo "📦 Adding debian to build matrix: v$DEBIAN_VERSION from $DEBIAN_BRANCH"
           fi
           
           # Combine with architectures
           ARCHS='["amd64", "aarch64"]'
           
           # Create full matrix
-          MATRIX=$(jq -c -n --argjson variants "$VARIANTS" --argjson archs "$ARCHS" '{include: [($variants[] | . as $v | $archs[] | {variant: $v.variant, version: $v.version, branch: $v.branch, dockerfile: $v.dockerfile, image_suffix: $v.image_suffix, arch: .})]}')
+          MATRIX=$(jq -c -n --argjson variants "$VARIANTS" --argjson archs "$ARCHS" '{include: [($variants[] | . as $v | $archs[] | {variant: $v.variant, version: $v.version, branch: $v.branch, dockerfile: $v.dockerfile, image_suffix: $v.image_suffix, base_image: $v.base_image, arch: .})]}')
           
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
           echo "📦 Build Matrix:"
@@ -213,7 +285,7 @@ jobs:
           push: true
           platforms: linux/${{ matrix.arch == 'aarch64' && 'arm64' || matrix.arch }}
           build-args: |
-            BUILD_FROM=ghcr.io/home-assistant/${{ matrix.arch }}-base-python:3.12-alpine3.21
+            BUILD_FROM=ghcr.io/home-assistant/${{ matrix.arch }}-${{ matrix.base_image }}
             BRANCH=${{ matrix.branch }}
             CACHEBUST=${{ github.run_id }}
           tags: |
@@ -238,6 +310,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Image:** \`${{ env.IMAGE_BASE }}${{ matrix.image_suffix }}-${{ matrix.arch }}:${{ matrix.version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch:** \`${{ matrix.branch }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base:** \`${{ matrix.base_image }}\`" >> $GITHUB_STEP_SUMMARY
 
   # ============================================
   # Final summary
@@ -264,7 +337,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ "${{ needs.detect-version-changes.outputs.stable_changed }}" == "true" ]; then
-            echo "**Stable:** v${{ needs.prepare.outputs.stable_version }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Stable (Alpine):** v${{ needs.prepare.outputs.stable_version }}" >> $GITHUB_STEP_SUMMARY
             echo "- \`ghcr.io/anshulj999/synclyrics-ha-amd64:${{ needs.prepare.outputs.stable_version }}\`" >> $GITHUB_STEP_SUMMARY
             echo "- \`ghcr.io/anshulj999/synclyrics-ha-aarch64:${{ needs.prepare.outputs.stable_version }}\`" >> $GITHUB_STEP_SUMMARY
           else
@@ -274,11 +347,21 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ "${{ needs.detect-version-changes.outputs.beta_changed }}" == "true" ]; then
-            echo "**Beta:** v${{ needs.prepare.outputs.beta_version }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Beta (Alpine):** v${{ needs.prepare.outputs.beta_version }}" >> $GITHUB_STEP_SUMMARY
             echo "- \`ghcr.io/anshulj999/synclyrics-ha-beta-amd64:${{ needs.prepare.outputs.beta_version }}\`" >> $GITHUB_STEP_SUMMARY
             echo "- \`ghcr.io/anshulj999/synclyrics-ha-beta-aarch64:${{ needs.prepare.outputs.beta_version }}\`" >> $GITHUB_STEP_SUMMARY
           else
             echo "**Beta:** ⏭️ No version change" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.detect-version-changes.outputs.debian_changed }}" == "true" ]; then
+            echo "**Debian (glibc):** v${{ needs.prepare.outputs.debian_version }}" >> $GITHUB_STEP_SUMMARY
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-debian-amd64:${{ needs.prepare.outputs.debian_version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`ghcr.io/anshulj999/synclyrics-ha-debian-aarch64:${{ needs.prepare.outputs.debian_version }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Debian:** ⏭️ No version change" >> $GITHUB_STEP_SUMMARY
           fi
 
   # ============================================
@@ -287,7 +370,7 @@ jobs:
   no-changes:
     runs-on: ubuntu-latest
     needs: detect-version-changes
-    if: github.event_name == 'push' && needs.detect-version-changes.outputs.stable_changed != 'true' && needs.detect-version-changes.outputs.beta_changed != 'true'
+    if: github.event_name == 'push' && needs.detect-version-changes.outputs.stable_changed != 'true' && needs.detect-version-changes.outputs.beta_changed != 'true' && needs.detect-version-changes.outputs.debian_changed != 'true'
     steps:
       - name: No version changes
         run: |
