@@ -1,9 +1,9 @@
-name: "SyncLyrics"
+name: "SyncLyrics (Debian)"
 version: "1.9.2"
-slug: "synclyrics"
-image: ghcr.io/anshulj999/synclyrics-ha-{arch}
+slug: "synclyrics-debian"
+image: ghcr.io/anshulj999/synclyrics-ha-debian-{arch}
 init: false
-description: "Real-time synchronized lyrics for your smart home."
+description: "Real-time synchronized lyrics for your smart home. Debian version for server compatibility."
 url: "https://github.com/AnshulJ999/SyncLyrics"
 arch:
   - amd64

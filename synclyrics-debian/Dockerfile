@@ -1,6 +1,9 @@
-# SyncLyrics Home Assistant Add-on
+# SyncLyrics Home Assistant Add-on (Debian Version)
 # Multi-stage build for optimized image size
 # https://github.com/AnshulJ999/SyncLyrics
+#
+# This Debian-based version uses glibc instead of musl,
+# providing better compatibility with numpy/OpenBLAS on server CPUs.
 
 # ============================================
 # STAGE 1: Builder
@@ -19,25 +22,24 @@ ARG CACHEBUST=1
 WORKDIR /app
 
 # Install build dependencies (will be discarded in final stage)
-RUN apk add --no-cache --virtual .build-deps \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
         gcc \
         g++ \
-        musl-dev \
         cargo \
-        rust \
-        pkgconf \
-        openblas-dev \
-        jpeg-dev \
-        zlib-dev \
+        rustc \
+        pkg-config \
+        libopenblas-dev \
+        libjpeg-dev \
+        zlib1g-dev \
         libffi-dev \
-        alsa-lib-dev \
-        portaudio-dev
-
-# Install runtime dependencies that are also needed for building
-RUN apk add --no-cache \
+        libasound2-dev \
+        portaudio19-dev \
         python3 \
-        py3-pip \
-        git
+        python3-pip \
+        python3-venv \
+        git \
+    && rm -rf /var/lib/apt/lists/*
 
 # Clone SyncLyrics from GitHub
 # The CACHEBUST arg invalidates cache for this layer and all subsequent layers
@@ -56,9 +58,6 @@ RUN sed -i '/winsdk/d' requirements.txt && \
     sed -i '/psutil/d' requirements.txt && \
     echo "spotipy" >> requirements.txt
 
-# Remove conflicting system Python packages
-RUN apk del py3-quart py3-werkzeug py3-flask py3-blinker 2>/dev/null || true
-
 # Install Python dependencies to a neutral /install folder (version-agnostic)
 # This avoids hardcoding Python version in COPY paths
 RUN pip3 install --no-cache-dir --upgrade --target=/install -r requirements.txt --break-system-packages
@@ -72,18 +71,19 @@ FROM $BUILD_FROM
 WORKDIR /app
 
 # Install runtime dependencies only (no build tools)
-# Note: libjpeg-turbo, zlib, libffi, openblas are needed at runtime
-RUN apk add --no-cache \
+# Note: libjpeg, zlib, libffi, openblas are needed at runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
         python3 \
-        py3-pip \
+        python3-pip \
         jq \
         ffmpeg \
-        alsa-lib \
-        portaudio \
-        libjpeg-turbo \
-        zlib \
-        libffi \
-        openblas
+        libasound2 \
+        libportaudio2 \
+        libjpeg62-turbo \
+        zlib1g \
+        libffi8 \
+        libopenblas0 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy Python packages from builder (version-agnostic)
 COPY --from=builder /install /install
