@@ -59,3 +59,6 @@ configuration:
   music_assistant_player_id:
     name: "Music Assistant Player ID"
     description: "Specific player ID (leave empty to auto-detect first active player)"
+  compatibility_mode:
+    name: "CPU Compatibility Mode"
+    description: "Enable if experiencing crashes on Intel Xeon or server-grade CPUs. Uses conservative OpenBLAS settings."
