@@ -38,6 +38,70 @@ export SYSTEM_MUSIC_ASSISTANT_SERVER_URL=$(get_config 'music_assistant_server_ur
 export SYSTEM_MUSIC_ASSISTANT_TOKEN=$(get_config 'music_assistant_token')
 export SYSTEM_MUSIC_ASSISTANT_PLAYER_ID=$(get_config 'music_assistant_player_id')
 
+# =============================================================================
+# OpenBLAS Compatibility Mode (for Intel Xeon / musl libc issues)
+# =============================================================================
+# This fixes numpy segfaults on server-grade CPUs (Intel Xeon, etc.)
+# running under Alpine Linux's musl libc.
+#
+# Mode is enabled if:
+#   1. User manually enabled compatibility_mode in config, OR
+#   2. Intel Xeon CPU is auto-detected
+#
+# What it does:
+#   - OPENBLAS_NUM_THREADS=1: Disables multi-threading to prevent crashes
+#   - OPENBLAS_CORETYPE=SANDYBRIDGE: Uses conservative, widely-compatible instructions
+# =============================================================================
+
+COMPAT_MODE=$(get_config 'compatibility_mode')
+XEON_DETECTED=""
+CPU_MODEL=""
+
+# Get CPU model for logging
+if [ -f /proc/cpuinfo ]; then
+    CPU_MODEL=$(grep -m1 "model name" /proc/cpuinfo 2>/dev/null | cut -d: -f2 | xargs)
+fi
+
+# Auto-detect Intel Xeon CPUs
+if grep -qi "xeon" /proc/cpuinfo 2>/dev/null; then
+    XEON_DETECTED="true"
+fi
+
+# Apply OpenBLAS workarounds if needed
+if [ "$COMPAT_MODE" == "true" ] || [ "$XEON_DETECTED" == "true" ]; then
+    # Log what we detected
+    echo "=== OpenBLAS Compatibility Mode ==="
+    if [ -n "$CPU_MODEL" ]; then
+        echo "CPU: $CPU_MODEL"
+    fi
+    
+    if [ "$XEON_DETECTED" == "true" ] && [ "$COMPAT_MODE" == "true" ]; then
+        echo "Mode: ENABLED (auto-detected Xeon + manual override)"
+    elif [ "$XEON_DETECTED" == "true" ]; then
+        echo "Mode: ENABLED (auto-detected Intel Xeon)"
+    else
+        echo "Mode: ENABLED (manual override)"
+    fi
+    
+    # Disable OpenBLAS multi-threading (prevents thread-related crashes)
+    export OPENBLAS_NUM_THREADS=1
+    echo "OPENBLAS_NUM_THREADS=1"
+    
+    # Force conservative instruction set (Sandy Bridge - widely compatible, 2011+)
+    export OPENBLAS_CORETYPE=SANDYBRIDGE
+    echo "OPENBLAS_CORETYPE=SANDYBRIDGE"
+    
+    # Also set OMP threads for completeness
+    export OMP_NUM_THREADS=1
+    echo "OMP_NUM_THREADS=1"
+    echo "=================================="
+else
+    # Log that we're running in normal mode
+    if [ -n "$CPU_MODEL" ]; then
+        echo "CPU: $CPU_MODEL (standard mode)"
+    fi
+fi
+
 
 # Check if Spotify credentials are configured
 if [ -z "$SPOTIFY_CLIENT_ID" ] || [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
