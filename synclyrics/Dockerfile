@@ -9,7 +9,12 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM AS builder
 
+# Default to main branch, can be overridden via workflow
 ARG BRANCH=main
+
+# Cache buster - changes every build to force fresh git clone
+# Without this, Docker reuses cached git clone results with stale code
+ARG CACHEBUST=1
 
 WORKDIR /app
 
@@ -35,7 +40,10 @@ RUN apk add --no-cache \
         git
 
 # Clone SyncLyrics from GitHub
-RUN git clone -b ${BRANCH} --depth 1 https://github.com/AnshulJ999/SyncLyrics.git .
+# The CACHEBUST arg invalidates cache for this layer and all subsequent layers
+# This ensures we always get the latest code from the repo
+RUN echo "Cache bust: ${CACHEBUST}" && \
+    git clone -b ${BRANCH} --depth 1 https://github.com/AnshulJ999/SyncLyrics.git .
 
 # Remove Windows/desktop dependencies not needed for headless Linux
 RUN sed -i '/winsdk/d' requirements.txt && \

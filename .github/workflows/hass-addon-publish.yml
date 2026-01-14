@@ -215,6 +215,7 @@ jobs:
           build-args: |
             BUILD_FROM=ghcr.io/home-assistant/${{ matrix.arch }}-base-python:3.12-alpine3.21
             BRANCH=${{ matrix.branch }}
+            CACHEBUST=${{ github.run_id }}
           tags: |
             ${{ env.IMAGE_BASE }}${{ matrix.image_suffix }}-${{ matrix.arch }}:${{ matrix.version }}
             ${{ env.IMAGE_BASE }}${{ matrix.image_suffix }}-${{ matrix.arch }}:latest
@@ -225,8 +226,11 @@ jobs:
             org.opencontainers.image.source=https://github.com/AnshulJ999/SyncLyrics
             io.hass.type=addon
             io.hass.arch=${{ matrix.arch }}
-          cache-from: type=gha,scope=${{ matrix.variant }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.variant }}-${{ matrix.arch }}
+          # DISABLED: GHA layer caching was causing stale git clone results
+          # The CACHEBUST arg now handles cache invalidation at the Dockerfile level
+          # cache-from: type=gha,scope=${{ matrix.variant }}-${{ matrix.arch }}
+          # cache-to: type=gha,mode=max,scope=${{ matrix.variant }}-${{ matrix.arch }}
+          no-cache: true
 
       - name: Job summary
         run: |
