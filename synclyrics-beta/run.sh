@@ -48,12 +48,18 @@ export SYSTEM_MUSIC_ASSISTANT_PLAYER_ID=$(get_config 'music_assistant_player_id'
 #   1. User manually enabled compatibility_mode in config, OR
 #   2. Intel Xeon CPU is auto-detected
 #
-# What it does:
-#   - OPENBLAS_NUM_THREADS=1: Disables multi-threading to prevent crashes
-#   - OPENBLAS_CORETYPE=SANDYBRIDGE: Uses conservative, widely-compatible instructions
+# openblas_coretype options:
+#   - (blank/empty): Use PRESCOTT (safest default, SSE3 only)
+#   - auto: Let OpenBLAS auto-detect (but still apply thread limits)
+#   - PRESCOTT: SSE3 only (most compatible, no AVX)
+#   - NEHALEM: SSE4.2 (older Xeons)
+#   - SANDYBRIDGE: AVX (2011+ CPUs)
+#   - HASWELL: AVX2 (2013+ CPUs)
+#   - ZEN: AVX2 optimized for AMD Ryzen/EPYC
 # =============================================================================
 
 COMPAT_MODE=$(get_config 'compatibility_mode')
+CORETYPE_CONFIG=$(get_config 'openblas_coretype')
 XEON_DETECTED=""
 CPU_MODEL=""
 
@@ -87,13 +93,24 @@ if [ "$COMPAT_MODE" == "true" ] || [ "$XEON_DETECTED" == "true" ]; then
     export OPENBLAS_NUM_THREADS=1
     echo "OPENBLAS_NUM_THREADS=1"
     
-    # Force conservative instruction set (Sandy Bridge - widely compatible, 2011+)
-    export OPENBLAS_CORETYPE=SANDYBRIDGE
-    echo "OPENBLAS_CORETYPE=SANDYBRIDGE"
-    
     # Also set OMP threads for completeness
     export OMP_NUM_THREADS=1
     echo "OMP_NUM_THREADS=1"
+    
+    # Set OPENBLAS_CORETYPE based on user config
+    if [ -z "$CORETYPE_CONFIG" ]; then
+        # Blank/empty = use PRESCOTT (safest default)
+        export OPENBLAS_CORETYPE=PRESCOTT
+        echo "OPENBLAS_CORETYPE=PRESCOTT (default - safest)"
+    elif [ "$CORETYPE_CONFIG" == "auto" ]; then
+        # auto = let OpenBLAS decide, don't set CORETYPE
+        echo "OPENBLAS_CORETYPE=(auto-detect)"
+    else
+        # User specified a core type
+        export OPENBLAS_CORETYPE="$CORETYPE_CONFIG"
+        echo "OPENBLAS_CORETYPE=$CORETYPE_CONFIG"
+    fi
+    
     echo "=================================="
 else
     # Log that we're running in normal mode

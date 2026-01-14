@@ -62,3 +62,6 @@ configuration:
   compatibility_mode:
     name: "CPU Compatibility Mode"
     description: "Enable if experiencing crashes on Intel Xeon or server-grade CPUs. Uses conservative OpenBLAS settings."
+  openblas_coretype:
+    name: "OpenBLAS CPU Type"
+    description: "CPU instruction set (only when compatibility mode active). Blank=safest (PRESCOTT). Options: auto, PRESCOTT, NEHALEM, SANDYBRIDGE, HASWELL, ZEN."

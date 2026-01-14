@@ -40,6 +40,10 @@ options:
   music_assistant_player_id: ""  # Specific player ID (blank = auto-detect first active player)
   # Compatibility mode for server CPUs (Intel Xeon, etc.) - auto-detected for Xeon, manual override available
   compatibility_mode: false  # Enable if experiencing crashes on server-grade CPUs
+  # OpenBLAS CPU instruction set (only used when compatibility_mode is active)
+  # Options: auto (let OpenBLAS decide), PRESCOTT (SSE3, safest), NEHALEM (SSE4.2), SANDYBRIDGE (AVX), HASWELL (AVX2), ZEN (AMD)
+  # Leave blank for safest default (PRESCOTT)
+  openblas_coretype: ""
 schema:
   spotify_client_id: str
   spotify_client_secret: str
@@ -62,6 +66,7 @@ schema:
   music_assistant_token: "str?"
   music_assistant_player_id: "str?"
   compatibility_mode: "bool?"
+  openblas_coretype: "str?"
 # ports:
 #   9012/tcp: 9012
 host_network: true
