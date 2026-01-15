@@ -95,8 +95,9 @@ ENV PYTHONPATH="/install${PYTHONPATH:+:$PYTHONPATH}"
 COPY --from=builder /app /app
 
 # Inject version from workflow (config.yaml is source of truth for HA add-ons)
+# If VERSION not passed, the cloned version.py is preserved as fallback
 ARG VERSION
-RUN echo "VERSION = \"${VERSION}\"" > /app/version.py
+RUN if [ -n "${VERSION}" ]; then echo "VERSION = \"${VERSION}\"" > /app/version.py; fi
 
 # Copy run script
 COPY run.sh /run.sh
