@@ -94,6 +94,10 @@ ENV PYTHONPATH="/install${PYTHONPATH:+:$PYTHONPATH}"
 # Copy application code from builder
 COPY --from=builder /app /app
 
+# Inject version from workflow (config.yaml is source of truth for HA add-ons)
+ARG VERSION
+RUN echo "VERSION = \"${VERSION}\"" > /app/version.py
+
 # Copy run script
 COPY run.sh /run.sh
 RUN tr -d '\r' < /run.sh > /run.sh.tmp && mv /run.sh.tmp /run.sh && chmod a+x /run.sh

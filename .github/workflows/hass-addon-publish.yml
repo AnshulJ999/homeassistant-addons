@@ -287,6 +287,7 @@ jobs:
           build-args: |
             BUILD_FROM=ghcr.io/home-assistant/${{ matrix.arch }}-${{ matrix.base_image }}
             BRANCH=${{ matrix.branch }}
+            VERSION=${{ matrix.version }}
             CACHEBUST=${{ github.run_id }}
           tags: |
             ${{ env.IMAGE_BASE }}${{ matrix.image_suffix }}-${{ matrix.arch }}:${{ matrix.version }}
