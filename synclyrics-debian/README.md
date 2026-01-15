@@ -1,5 +1,7 @@
 # SyncLyrics Home Assistant Addon
 
+**Note:** This Debian version is meant for compatibility with Intel Xeon and other server-grade CPUs that may face issues on regular Alpine images.
+
 Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
 
 Works with Spotify on all platforms. Windows users also get Windows Media integration. Can work on Linux, and also has Docker support.

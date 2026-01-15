@@ -3,7 +3,7 @@ version: "1.9.3"
 slug: "synclyrics-debian"
 image: ghcr.io/anshulj999/synclyrics-ha-debian-{arch}
 init: false
-description: "Real-time synchronized lyrics for your smart home. Debian version for server compatibility."
+description: "Real-time synchronized lyrics. Debian version for compatibility."
 url: "https://github.com/AnshulJ999/SyncLyrics"
 arch:
   - amd64
