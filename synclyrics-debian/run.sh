@@ -7,6 +7,9 @@ echo "Starting SyncLyrics..."
 # Path to Home Assistant Options
 CONFIG_PATH="/data/options.json"
 
+# Trap errors and print the exact line number — makes future debugging much easier
+trap 'echo "run.sh: ERROR at line $LINENO (exit code: $?)" >&2' ERR
+
 # Helper function to read config using jq
 function get_config {
     jq --raw-output ".$1 // empty" $CONFIG_PATH
@@ -58,8 +61,8 @@ export SYSTEM_MUSIC_ASSISTANT_PLAYER_ID=$(get_config 'music_assistant_player_id'
 #   - ZEN: AVX2 optimized for AMD Ryzen/EPYC
 # =============================================================================
 
-COMPAT_MODE=$(get_config 'compatibility_mode')
-CORETYPE_CONFIG=$(get_config 'openblas_coretype')
+COMPAT_MODE=$(get_config 'compatibility_mode') || COMPAT_MODE=""
+CORETYPE_CONFIG=$(get_config 'openblas_coretype') || CORETYPE_CONFIG=""
 XEON_DETECTED=""
 CPU_MODEL=""
 

@@ -70,6 +70,14 @@ FROM $BUILD_FROM
 
 WORKDIR /app
 
+# Disable jemalloc preload for RPi5 / 16K-page-size compatibility (HAOS 17+).
+# HA base images preload jemalloc (compiled for 4K pages) via LD_PRELOAD at s6 init time.
+# On RPi5 (Cortex-A76, 16K kernel pages), jemalloc aborts immediately, crashing every
+# child process (including jq) before Python ever starts. DISABLE_JEMALLOC=true tells
+# s6-overlay to skip the LD_PRELOAD setup, falling back to the system allocator.
+# Safe for all platforms — performance impact is negligible for a lyrics server.
+ENV DISABLE_JEMALLOC=true
+
 # Install runtime dependencies only (no build tools)
 # Note: libjpeg, zlib, libffi, openblas are needed at runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
