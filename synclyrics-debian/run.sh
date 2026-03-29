@@ -68,11 +68,11 @@ CPU_MODEL=""
 
 # Get CPU model for logging
 if [ -f /proc/cpuinfo ]; then
-    CPU_MODEL=$(grep -m1 "model name" /proc/cpuinfo 2>/dev/null | cut -d: -f2 | xargs)
+    CPU_MODEL=$(grep -m1 "model name" /proc/cpuinfo 2>/dev/null | cut -d: -f2 | xargs) || CPU_MODEL=""
 fi
 
 # Auto-detect Intel Xeon CPUs
-if grep -qi "xeon" /proc/cpuinfo 2>/dev/null; then
+if [ -f /proc/cpuinfo ] && grep -qi "xeon" /proc/cpuinfo 2>/dev/null; then
     XEON_DETECTED="true"
 fi
 
@@ -136,7 +136,7 @@ if [ "$(get_config 'debug')" == "true" ]; then
     export DEBUG_ENABLED="true"
     export DEBUG_LOG_DETAILED="true"  # Enable detailed debug logging to debug.log file
     # If debug is enabled, override log_level to DEBUG unless explicitly set
-    LOG_LEVEL_CONFIG=$(get_config 'log_level')
+    LOG_LEVEL_CONFIG=$(get_config 'log_level') || LOG_LEVEL_CONFIG=""
     if [ -z "$LOG_LEVEL_CONFIG" ] || [ "$LOG_LEVEL_CONFIG" == "null" ]; then
         export DEBUG_LOG_LEVEL="DEBUG"
     else
@@ -146,7 +146,7 @@ else
     export DEBUG_ENABLED="false"
     export DEBUG_LOG_DETAILED="true"
     # Set log level from config (defaults to INFO if not set)
-    LOG_LEVEL_CONFIG=$(get_config 'log_level')
+    LOG_LEVEL_CONFIG=$(get_config 'log_level') || LOG_LEVEL_CONFIG=""
     if [ -z "$LOG_LEVEL_CONFIG" ] || [ "$LOG_LEVEL_CONFIG" == "null" ]; then
         export DEBUG_LOG_LEVEL="INFO"
     else
