@@ -77,7 +77,7 @@ WORKDIR /app
 # child process (including jq) before Python ever starts. DISABLE_JEMALLOC=true tells
 # s6-overlay to skip the LD_PRELOAD setup, falling back to the system allocator.
 # Safe for all platforms — performance impact is negligible for a lyrics server.
-ENV DISABLE_JEMALLOC=true
+# ENV DISABLE_JEMALLOC=true
 
 # Install runtime dependencies only (no build tools)
 # Note: libjpeg-turbo, zlib, libffi, openblas are needed at runtime
