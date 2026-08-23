@@ -1,4 +1,10 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
+## 2.4.0-beta
+
+- **Keep Screen Awake (behavior change):** phones and tablets showing SyncLyrics over HTTPS now stay awake while a track is playing, instead of dimming on their usual timeout. Change it under Settings > UI > Keep Screen Awake (`always` / `playback` / `off`), or add `?keepAwake=off` to a display's URL. Note that the Lovelace iframe card cannot grant the browser permission this needs, so dashboard embeds still require the direct URL or Fully Kiosk Browser.
+- Added Pear Desktop (YouTube Music) as a metadata source - enable it under Media settings (off by default)
+- Fixed `.env` path overrides (`SYNCLYRICS_SETTINGS_FILE`, `SYNCLYRICS_LOGS_DIR`) being silently ignored
+
 ## 2.3.0-beta
 
 - Fixed Spotify re-login being permanently stuck after a refresh token expires or is revoked (Spotify's new 6-month refresh-token expiration policy)

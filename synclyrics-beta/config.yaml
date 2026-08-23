@@ -1,5 +1,5 @@
 name: "SyncLyrics BETA"
-version: "2.3.0-beta"
+version: "2.4.0-beta"
 slug: "synclyrics-beta"
 image: ghcr.io/anshulj999/synclyrics-ha-beta-{arch}
 init: false
