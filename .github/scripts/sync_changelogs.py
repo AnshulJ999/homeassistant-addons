@@ -89,8 +89,10 @@ def main() -> int:
 
         content = render(split_sections(source_text), beta, addon_version)
         if f"## {addon_version}\n" not in content:
-            # Warn, don't fail: HA then shows the whole changelog instead of just new entries
-            print(f"::warning::{folder}: no '## {addon_version}' section in SyncLyrics {branch} CHANGELOG.md")
+            # Source is stale (raw.githubusercontent caches ~5 min) or missing this version:
+            # keep the existing file rather than overwrite a correct one with older content.
+            print(f"::warning::{folder}: no '## {addon_version}' section in SyncLyrics {branch} CHANGELOG.md, skipped")
+            continue
 
         target = REPO_ROOT / folder / "CHANGELOG.md"
         if args.dry_run:
