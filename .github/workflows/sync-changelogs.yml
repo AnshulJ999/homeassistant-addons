@@ -1,0 +1,42 @@
+name: Sync add-on changelogs
+
+# Rebuilds each add-on's CHANGELOG.md from SyncLyrics' CHANGELOG.md whenever a
+# version is bumped (same trigger as the image build), or on demand.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'synclyrics/config.yaml'
+      - 'synclyrics-beta/config.yaml'
+      - 'synclyrics-debian/config.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-changelogs
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild changelogs from SyncLyrics
+        run: python3 .github/scripts/sync_changelogs.py
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet; then
+            echo "Changelogs already in sync"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add synclyrics/CHANGELOG.md synclyrics-debian/CHANGELOG.md synclyrics-beta/CHANGELOG.md
+          git commit -m "Sync changelogs from SyncLyrics"
+          # A CHANGELOG-only push does not match the build workflow's paths filter
+          git pull --rebase origin main
+          git push origin HEAD:main
