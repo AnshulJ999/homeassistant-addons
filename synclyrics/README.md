@@ -18,7 +18,7 @@ Follows what's playing on Music Assistant (including Sonos, AirPlay and Spotify 
 ## ✨ Features
 
 ### 🔌 Sources
-- **Music Assistant:** Lyrics for any MA player, including music started outside MA (Sonos app, AirPlay, Spotify Connect, radio)
+- **Music Assistant:** Lyrics for any MA player, including music started outside MA (Sonos app, AirPlay, Spotify Connect). Radio shows the right song, but its lyrics can't be synced; use Audio Recognition for that
 - **Spotify:** Through the Spotify Web API
 - **Now Playing Input:** Phones (Tasker, MacroDroid), HA automations or your own scripts can send what's playing. See [Now Playing Input](https://github.com/AnshulJ999/SyncLyrics/blob/main/docs/Now%20Playing%20Input.md)
 - **Audio Recognition:** Identifies whatever is playing in the room
