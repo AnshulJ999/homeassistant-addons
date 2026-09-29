@@ -27,11 +27,12 @@ VARIANTS = {
 }
 
 # Added to the newest section only, so the HA update dialog shows it once
-SUPPORT_LINE = (
-    "☕ Enjoying SyncLyrics? Support it: [GitHub Sponsors](https://github.com/sponsors/AnshulJ999) · "
-    "[Ko-fi](https://ko-fi.com/anshul99) · [Patreon](https://www.patreon.com/AnshulJain) · "
-    "[PayPal](https://paypal.me/AnshulJain99)"
-)
+SUPPORT_BLOCK = """☕ **Enjoying SyncLyrics?** It started as a small hobby project so I could get lyrics on my tablet, and somehow grew into this. It's free and made by one person, so if it's earned a spot in your setup, a small contribution would really help me keep building it :)
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub-Sponsor-ea4aaa?logo=githubsponsors)](https://github.com/sponsors/AnshulJ999)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-ff5e5b?logo=kofi)](https://ko-fi.com/anshul99)
+[![Patreon](https://img.shields.io/badge/Patreon-Join-f96854?logo=patreon)](https://www.patreon.com/AnshulJain)
+[![PayPal](https://img.shields.io/badge/PayPal-Donate-blue?logo=paypal)](https://paypal.me/AnshulJain99)"""
 
 HEADING = re.compile(r"^## \[(?P<ver>[^\]]+)\]")
 CONFIG_VERSION = re.compile(r'^version:\s*"?([^"\s]+)"?', re.MULTILINE)
@@ -75,7 +76,7 @@ def render(sections: list[tuple[str, list[str]]], beta: bool, addon_version: str
             body = body[:]
             while body and not body[-1].strip():
                 body.pop()
-            body += ["", SUPPORT_LINE, ""]
+            body += ["", SUPPORT_BLOCK, ""]
         lines.extend(body)
     return "\n".join(lines).rstrip() + "\n"
 

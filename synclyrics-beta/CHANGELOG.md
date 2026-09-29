@@ -44,7 +44,12 @@ Settings now opens on an Overview page with your version, what's new, a quick st
 - New guides: [Now Playing Input](https://github.com/AnshulJ999/SyncLyrics/blob/main/docs/Now%20Playing%20Input.md), and an [AI setup guide](https://github.com/AnshulJ999/SyncLyrics/blob/main/AI-SETUP.md) you can hand to an AI assistant to install SyncLyrics for you.
 - The API Reference now covers using SyncLyrics as a lyrics server for your own apps.
 
-☕ Enjoying SyncLyrics? Support it: [GitHub Sponsors](https://github.com/sponsors/AnshulJ999) · [Ko-fi](https://ko-fi.com/anshul99) · [Patreon](https://www.patreon.com/AnshulJain) · [PayPal](https://paypal.me/AnshulJain99)
+☕ **Enjoying SyncLyrics?** It started as a small hobby project so I could get lyrics on my tablet, and somehow grew into this. It's free and made by one person, so if it's earned a spot in your setup, a small contribution would really help me keep building it :)
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub-Sponsor-ea4aaa?logo=githubsponsors)](https://github.com/sponsors/AnshulJ999)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-ff5e5b?logo=kofi)](https://ko-fi.com/anshul99)
+[![Patreon](https://img.shields.io/badge/Patreon-Join-f96854?logo=patreon)](https://www.patreon.com/AnshulJain)
+[![PayPal](https://img.shields.io/badge/PayPal-Donate-blue?logo=paypal)](https://paypal.me/AnshulJain99)
 
 ## 2.4.0-beta
 
