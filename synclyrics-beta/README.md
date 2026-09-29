@@ -1,12 +1,14 @@
 # SyncLyrics Home Assistant Addon
 
+**Note:** This is the beta channel. It gets new versions from the development branch before they reach the stable add-on, so expect the occasional rough edge.
+
 Real-time synchronized lyrics for your smart home. A feature-rich application that displays synchronized lyrics for your currently playing music, accessible from any device on your network.
 
-Works with Spotify on all platforms. Windows users also get Windows Media integration. Can work on Linux, and also has Docker support.
+Follows what's playing on Music Assistant (including Sonos, AirPlay and Spotify Connect speakers) and Spotify, takes now-playing info from phones, Home Assistant automations or scripts through Now Playing Input, and can recognise music playing in the room through a microphone.
 
-**Main Repository:** [github.com/AnshulJ999/SyncLyrics](https://github.com/AnshulJ999/SyncLyrics)
+**Main Repository:** [github.com/AnshulJ999/SyncLyrics](https://github.com/AnshulJ999/SyncLyrics) · **Docs:** [SyncLyrics docs](https://github.com/AnshulJ999/SyncLyrics/tree/main/docs)
 
-☕ **Enjoying SyncLyrics?** It's free and made by one person. If it's earned a spot in your setup, you can support it here:
+☕ **Enjoying SyncLyrics?** It started as a small hobby project so I could get lyrics on my tablet, and somehow grew into this. It's free and made by one person, so if it's earned a spot in your setup, a small contribution would really help me keep building it :)
 
 [![GitHub Sponsors](https://img.shields.io/badge/GitHub-Sponsor-ea4aaa?logo=githubsponsors)](https://github.com/sponsors/AnshulJ999)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-ff5e5b?logo=kofi)](https://ko-fi.com/anshul99)
@@ -16,6 +18,12 @@ Works with Spotify on all platforms. Windows users also get Windows Media integr
 ---
 
 ## ✨ Features
+
+### 🔌 Sources
+- **Music Assistant:** Lyrics for any MA player, including music started outside MA (Sonos app, AirPlay, Spotify Connect, radio)
+- **Spotify:** Through the Spotify Web API
+- **Now Playing Input:** Phones (Tasker, MacroDroid), HA automations or your own scripts can send what's playing. See [Now Playing Input](https://github.com/AnshulJ999/SyncLyrics/blob/main/docs/Now%20Playing%20Input.md)
+- **Audio Recognition:** Identifies whatever is playing in the room
 
 ### 🎵 Lyrics
 - **5 Providers:** Spotify, LRCLib, Musixmatch, NetEase, QQ Music
@@ -72,6 +80,16 @@ All options are configured through the Home Assistant addon configuration panel.
 | `spotify_redirect_uri` | OAuth callback URL (**must match Spotify Dashboard exactly**) |
 | `spotify_base_url` | Lyrics API endpoint (default provided) |
 
+### Music Assistant
+
+| Option | Description |
+|--------|-------------|
+| `music_assistant_server_url` | Music Assistant server URL, e.g. `http://192.168.1.100:8095` |
+| `music_assistant_token` | API token from Music Assistant (**Settings → Security**) |
+| `music_assistant_player_id` | A specific player to follow (leave empty to use the active player) |
+
+More in the [Music Assistant guide](https://github.com/AnshulJ999/SyncLyrics/blob/main/docs/Music%20Assistant.md).
+
 ### Optional API Keys
 
 | Option | Description |
@@ -105,6 +123,13 @@ All options are configured through the Home Assistant addon configuration panel.
 | `spotify_polling_fast_interval` | `2.0` | Seconds between polls during active playback |
 | `spotify_polling_slow_interval` | `6.0` | Seconds between polls when paused or idle |
 
+### CPU Compatibility
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `compatibility_mode` | `false` | Turn on if the add-on crashes on Intel Xeon or other server-grade CPUs |
+| `openblas_coretype` | *(blank)* | CPU instruction set used in compatibility mode. Blank is safest; options: `auto`, `PRESCOTT`, `NEHALEM`, `SANDYBRIDGE`, `HASWELL`, `ZEN` |
+
 ### HTTPS (Required for Browser Microphone)
 
 To use the browser microphone for audio recognition, HTTPS is required.
@@ -136,7 +161,7 @@ If you have another method to access HTTPS (such as HASS behind an HTTPS proxy),
 
 ### Initial Authentication
 
-⚠️ **Important**: For initial OAuth authentication, access the addon **directly via port** (not through Ingress):
+⚠️ **Important**: For initial OAuth authentication, open the addon over HTTPS on its port:
 
 ```
 https://<YOUR_HA_IP>:9013
@@ -165,8 +190,15 @@ Append these to the URL for custom displays (e.g., `http://<HA_IP>:9012/?minimal
 | `artBackground` | `true/false` | Blurred album art background |
 | `hideControls` | `true/false` | Hide playback controls |
 | `hideProgress` | `true/false` | Hide progress bar |
+| `keepAwake` | `always/playback/off` | Keep the screen on for this display |
 
-> **Tip:** These can be configured via the on-screen settings panel, then copy the URL.
+> **Tip:** These can be configured via the on-screen settings panel, then copy the URL. Full list: [URL Parameters](https://github.com/AnshulJ999/SyncLyrics#url-parameters).
+
+---
+
+## 🔔 Updates and Usage Stats
+
+SyncLyrics checks for updates once a day and sends anonymous usage stats: the version, how it's installed, and which sources and lyrics providers you use. It never sends what you're listening to or your settings, and your IP address isn't stored. Turn either off in **Settings → Updates** inside SyncLyrics. Details: [Usage Stats](https://github.com/AnshulJ999/SyncLyrics/blob/main/docs/Usage%20Stats.md).
 
 ---
 
@@ -194,7 +226,7 @@ This prevents backups from becoming excessively large (databases can grow to 1GB
 ### Spotify Authentication Fails
 - Ensure `spotify_redirect_uri` **exactly matches** what's registered in your Spotify Developer Dashboard
 - Use your actual Home Assistant URL, not `127.0.0.1` or `localhost`
-- Complete initial OAuth via direct port access, not Ingress
+- Complete initial OAuth over HTTPS on port 9013
 
 ### Token Expires After Restart
 - Verify `spotify_cache_path` is set to `/config/.spotify_cache`
@@ -202,16 +234,16 @@ This prevents backups from becoming excessively large (databases can grow to 1GB
 
 ### Audio Recognition (Browser Mic)
 - HTTPS is required for browser microphone access
-- Ingress may not work due to SSL requirements
-- Use direct HTTPS access if available
+- Open the addon over HTTPS on port 9013 and accept the certificate warning
 
 ### Lyrics Not Showing
-- Check that Spotify is playing on a device
+- Music Assistant: check the server URL and token in the addon configuration
+- Spotify: check that Spotify is playing on a device
 - There may be a 2-5 second delay due to API polling
 - Check addon logs for errors
 
 ### "Spotify not connected" Error
-- Ensure you've completed the OAuth flow via direct port access
+- Ensure you've completed the OAuth flow over HTTPS on port 9013
 - Check that your redirect_uri exactly matches the Spotify Dashboard
 
 ---
@@ -219,10 +251,12 @@ This prevents backups from becoming excessively large (databases can grow to 1GB
 ## 🔗 Links
 
 - **Main Repository:** [github.com/AnshulJ999/SyncLyrics](https://github.com/AnshulJ999/SyncLyrics)
+- **Docs:** [SyncLyrics docs](https://github.com/AnshulJ999/SyncLyrics/tree/main/docs)
+- **Questions and ideas:** [GitHub Discussions](https://github.com/AnshulJ999/SyncLyrics/discussions)
 - **Report Issues:** [github.com/AnshulJ999/homeassistant-addons/issues](https://github.com/AnshulJ999/homeassistant-addons/issues)
 
 ---
 
 ## 📜 License
 
-[MIT](https://github.com/AnshulJ999/SyncLyrics/blob/main/LICENSE)
+[MIT with Commons Clause](https://github.com/AnshulJ999/SyncLyrics/blob/main/LICENSE)
