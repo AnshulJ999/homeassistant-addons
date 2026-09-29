@@ -1,19 +1,111 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
+## 2.5.0
+
+### ⚠️ Important
+
+SyncLyrics now checks for updates once a day and sends anonymous usage stats: the version, how it's installed, the OS, and which sources and lyrics providers you use. It never sends what you're listening to or your settings, and your IP address isn't stored. You can turn both off in **Settings > Updates**. Details: [Usage Stats](https://github.com/AnshulJ999/SyncLyrics/blob/main/docs/Usage%20Stats.md).
+
+### ✨ New Features
+
+#### Now Playing Input
+
+Your phone, a Home Assistant automation or your own script can now tell SyncLyrics what's playing, and it shows the lyrics. Phones work through Tasker or MacroDroid: send the song to `POST /api/now-playing`. Turn it on in **Settings > Media** (off by default), and set a token there if SyncLyrics is reachable from the internet.
+
+#### Music Assistant: music it didn't start
+
+Music Assistant players now show lyrics for music started elsewhere, like the Sonos app, Spotify Connect, AirPlay or a radio button. Play, pause, skip and seek go straight to the speaker.
+
+#### TIDAL (tidal-hifi)
+
+A new source reads what's playing in [tidal-hifi](https://github.com/Mastermindzh/tidal-hifi), the TIDAL desktop app. Turn it on in **Settings > Media** (off by default).
+
+#### Windows players over the network (smtc-now-playing)
+
+A Docker or Home Assistant install can now follow any player on a Windows PC running [smtc-now-playing](https://github.com/soarqin/smtc-now-playing). Turn it on in **Settings > Media** (off by default).
+
+#### Update notices and a new Overview page
+
+Settings now opens on an Overview page with your version, what's new, a quick status check and how to update. A small dot on the settings icon means an update is out, and after an update this What's New panel shows once.
+
+### 🐛 Bug Fixes and Improvements
+
+- Fixed next-track album art not loading with Music Assistant. Thanks to [@morgancurrie](https://github.com/morgancurrie) in [#26](https://github.com/AnshulJ999/SyncLyrics/pull/26).
+- Fixed the main album art request size for Music Assistant, which newer Music Assistant versions reject.
+- Fixed Music Assistant radio stations showing the station name instead of the song that's playing, so lyrics can now be found for radio too.
+- Music Assistant now asks the MA server for the queue far less often, so there's less network chatter.
+- Fixed the source name showing "Idle" while Pear Desktop was playing.
+- Fixed audio recognition still trying ACRCloud after its daily limit was used up.
+- Fixed browsers sometimes showing an outdated version of the page for up to 12 hours after an update.
+- Fixed a rare case where app state could be lost if SyncLyrics stopped while saving it.
+- The Linux AppImage now runs on older Linux versions too. Its file name now ends in `x86_64.AppImage` instead of `linux-x64.AppImage`.
+
+### 📖 Documentation
+
+- New guides: [Now Playing Input](https://github.com/AnshulJ999/SyncLyrics/blob/main/docs/Now%20Playing%20Input.md), and an [AI setup guide](https://github.com/AnshulJ999/SyncLyrics/blob/main/AI-SETUP.md) you can hand to an AI assistant to install SyncLyrics for you.
+- The API Reference now covers using SyncLyrics as a lyrics server for your own apps.
+
+☕ Enjoying SyncLyrics? Support it: [GitHub Sponsors](https://github.com/sponsors/AnshulJ999) · [Ko-fi](https://ko-fi.com/anshul99) · [Patreon](https://www.patreon.com/AnshulJain) · [PayPal](https://paypal.me/AnshulJain99)
+
 ## 2.4.0
 
-- **Keep Screen Awake (behavior change):** phones and tablets showing SyncLyrics over HTTPS now stay awake while a track is playing, instead of dimming on their usual timeout. Change it under Settings > UI > Keep Screen Awake (`always` / `playback` / `off`), or add `?keepAwake=off` to a display's URL. Note that the Lovelace iframe card cannot grant the browser permission this needs, so dashboard embeds still require the direct URL or Fully Kiosk Browser.
-- Added Pear Desktop (YouTube Music) as a metadata source - enable it under Media settings (off by default)
-- Fixed `.env` path overrides (`SYNCLYRICS_SETTINGS_FILE`, `SYNCLYRICS_LOGS_DIR`) being silently ignored
+### ⚠️ Important
+
+**Keep Screen Awake is enabled by default and changes how your display behaves.** After upgrading, any phone or tablet showing SyncLyrics over HTTPS will stay awake while a track is playing, rather than dimming and locking on its usual timeout. The lock is released as soon as playback stops.
+
+That's the point of the feature, but it does mean more battery drain on a device that isn't plugged in, and it can look like the device has stopped sleeping properly. To change it: **Settings > UI > Keep Screen Awake** (`always` / `playback` / `off`), or add `?keepAwake=off` to the URL for a single display.
+
+Nothing changes over plain HTTP - the browser API requires a secure context, so the feature is inactive there.
+
+### ✨ New Features
+
+#### Pear Desktop (YouTube Music) Source
+
+SyncLyrics can now read the currently playing track from [Pear Desktop](https://github.com/pear-devs/pear-desktop), giving YouTube Music users synced lyrics. Enable it under Media settings (off by default) and make sure Pear Desktop's API server plugin is running - the default URL is `http://127.0.0.1:26538`.
+
+Thanks to [@webbrain-one](https://github.com/webbrain-one) for the implementation in [#24](https://github.com/AnshulJ999/SyncLyrics/pull/24), and [@1upbyte](https://github.com/1upbyte) for the original request and API research in [#20](https://github.com/AnshulJ999/SyncLyrics/issues/20).
+
+#### Keep Screen Awake
+
+Phones and tablets used as a lyrics display no longer dim and lock mid-song. A new **Keep Screen Awake** setting (Settings > UI) uses the Screen Wake Lock API to hold the display on - `always`, only during `playback` (default), or `off`. Override it per display with `?keepAwake=always|playback|off`.
+
+Requires a secure context (HTTPS or localhost). In an iframe the parent must set `allow="screen-wake-lock"`, which the Home Assistant Lovelace iframe card does not - those users still need the direct URL or Fully Kiosk.
+
+Thanks to [@Ayce45](https://github.com/Ayce45) for contributing this feature in [#25](https://github.com/AnshulJ999/SyncLyrics/pull/25).
+
+### 🐛 Bug Fixes
+
+- Fixed `.env` path overrides (`SYNCLYRICS_SETTINGS_FILE`, `SYNCLYRICS_LOGS_DIR`) being silently ignored.
 
 ## 2.3.0
 
-- Fixed Spotify re-login being permanently stuck after a refresh token expires or is revoked (Spotify's new 6-month refresh-token expiration policy)
-- Fixed the app silently looping instead of prompting re-login when a Spotify refresh token is revoked mid-session
-- Added a Spotify connection status/monitor to Settings → Spotify API (live status, Test connection, Disconnect)
+### ⚠️ Important
+
+Spotify has begun enforcing a 6-month expiration on refresh tokens for existing apps (rolling out from 2026-07-20). If you were logged into Spotify before this release, you may have hit a "Refresh token revoked" login error that couldn't be cleared no matter how many times you re-authorized. This release fixes that.
+
+### 🐛 Bug Fixes
+
+- **Fixed Spotify re-login being permanently stuck after a refresh token expires/is revoked.** A fresh login was being silently discarded in favor of retrying the old, already-dead cached token, so re-authorizing never actually worked. Logging in now always uses the fresh authorization code.
+- Fixed the app silently looping on backoff forever (instead of prompting re-login) when a Spotify refresh token is revoked mid-session.
+
+### ✨ New Features
+
+#### Spotify Connection Monitor
+- New status card in **Settings → Spotify API** showing live connection health (connected / degraded / needs reconnect / not configured)
+- **Test connection** button for an on-demand real check against Spotify
+- **Disconnect** button to remove the saved local Spotify login (does not revoke access on Spotify's side - remove SyncLyrics from your Spotify account's connected apps for that)
 
 ## 2.2.0
 
 - Stability release with several bug fixes since 2.0.5.
+
+## 2.1.1-beta
+
+- Fixed audio recognition in frozen (packaged) builds.
+
+## 2.1.0-beta
+
+- Initial code for local audio fingerprinting support via the SoundFingerprinting library (not yet exposed to general users).
+- Bug fixes and better error logging.
 
 ## 2.0.5
 
@@ -21,27 +113,102 @@
 
 ## 2.0.0
 
-- Media Browser: embedded Spotify/Music Assistant library browser
-- Playback controls: volume slider, device picker, shuffle/repeat
-- Full Music Assistant support
-- macOS full support (Intel + Apple Silicon)
-- Custom font support
-- Note: Spotify OAuth scope changes required re-login for this version
+### ⚠️ Breaking Changes
+
+**Note:** Due to Spotify OAuth scope changes, you will have to re-login to Spotify and accept the new permissions. This is for the new enhanced features including device picker UI and volume/shuffle/repeat controls.
+
+### ✨ New Features
+
+#### Media Browser
+- **Embedded library browser** for Spotify and Music Assistant directly in the app
+- Browse playlists, albums, and artists without leaving the lyrics view
+- Toggle between Spotify and Music Assistant libraries with a single click
+- Auto-authentication for Music Assistant browser
+
+#### Playback Controls
+- **Volume control slider** with system integration
+- **Device picker** - switch playback between devices (Spotify Connect, MA players)
+- **Shuffle and repeat controls** with state sync across all sources
+- Shuffle/repeat state now properly propagates from all backends (Spotify, MA, Windows, Linux, macOS)
+
+#### Music Assistant Integration
+- Full Music Assistant support as an audio source
+- Device picker integration for MA players
+- WebSocket connection for real-time updates
+- Configurable latency compensation for network streaming
+
+#### Visual Enhancements
+- **Album name display** - optionally show album name on the main UI
+- Improved art mode and visual mode styling
+- Better slideshow controls and preferences
+
+#### Audio Source Improvements
+- **Idle state display** - shows "Idle" instead of last source when no music playing
+- Source stickiness via `paused_timeout: 0` for preferred default source
+- Spicetify paused heartbeat - returns cached data with `playing=false` instead of nothing
+
+#### Platform Support
+- **macOS full support** - Intel (x64) and Apple Silicon (ARM64) builds
+- Linux AppImage and tarball builds
+- Improved signal handling for graceful Ctrl+C exit on Linux
+
+#### Custom Fonts
+- Support for custom font files in the fonts directory
+- Variable font detection with proper weight ranges
+
+### 🐛 Bug Fixes
+
+- Fixed mobile playback controls layout and sizing
+- Fixed device picker modal visibility over media browser
+- Fixed first-time page load issues with media browser caching
+- Fixed settings gear icon hover alignment
+- Fixed event listener accumulation (memory leak)
+- Fixed copy URL button overflow on certain screens
+- Resolved Intel Xeon segfault in Home Assistant add-on (OpenBLAS compatibility)
+- Fixed Spotify data refresh for top tracks and recently played
+
+### 🏠 Home Assistant Add-on
+- Added `compatibility_mode` option for Intel Xeon processors
+- Auto-detection of CPU type for OpenBLAS settings
+- New Debian-based add-on variant for maximum compatibility
+
+### 📝 Documentation
+- Added Music Assistant integration guide
+- Added Custom Fonts documentation
+- Updated macOS support status (no longer "coming soon")
+- Added media browser documentation
+- Credited Spotify React Web Client
+
+### 🔧 Technical Improvements
+
+- Automated version numbering from Git tags in CI/CD
+- Multi-stage Docker builds with non-root user
+- Smoke tests for all release artifacts (Windows, Linux, macOS, Docker)
+- React client caching improvements
+- Spicetify extension timeout handling
+
+---
 
 ## 1.9.0
 
-- Added Music Assistant and Linux support
-- UI customization: custom fonts, adjustable lyrics sizing, and more
-- Multiple bug fixes and stability improvements
+- Added Music Assistant and Linux support.
+- UI customization: custom fonts, adjustable lyrics sizing, and more.
+- Multiple bug fixes and stability improvements.
+- Note at the time: macOS and AppImage builds were temporarily broken (fixed in a later release).
 
 ## 1.8.0
 
-- Stable release after 2+ weeks of stability testing
+- Stable release after 2+ weeks of stability testing, with multiple new features since 1.3.0.
 
 ## 1.3.0
 
-- Added the audio recognition engine (Shazam-based track detection)
+- Added the audio recognition engine (Shazam-based track detection).
+- Many bug fixes; first release considered stable enough for regular use.
 
 ## 1.0.0
 
-- First release candidate, stable for general use
+- First release candidate. Stable for general use.
+
+---
+
+See [GitHub Releases](https://github.com/AnshulJ999/SyncLyrics/releases) for earlier versions.
