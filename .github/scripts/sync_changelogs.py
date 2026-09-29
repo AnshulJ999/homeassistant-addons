@@ -26,6 +26,13 @@ VARIANTS = {
     "synclyrics-beta": ("development", True),
 }
 
+# Added to the newest section only, so the HA update dialog shows it once
+SUPPORT_LINE = (
+    "☕ Enjoying SyncLyrics? Support it: [GitHub Sponsors](https://github.com/sponsors/AnshulJ999) · "
+    "[Ko-fi](https://ko-fi.com/anshul99) · [Patreon](https://www.patreon.com/AnshulJain) · "
+    "[PayPal](https://paypal.me/AnshulJain99)"
+)
+
 HEADING = re.compile(r"^## \[(?P<ver>[^\]]+)\]")
 CONFIG_VERSION = re.compile(r'^version:\s*"?([^"\s]+)"?', re.MULTILINE)
 
@@ -64,6 +71,11 @@ def render(sections: list[tuple[str, list[str]]], beta: bool, addon_version: str
         else:
             label = ha_version(version, beta)
         lines.append(f"## {label}")
+        if len(lines) == 2:
+            body = body[:]
+            while body and not body[-1].strip():
+                body.pop()
+            body += ["", SUPPORT_LINE, ""]
         lines.extend(body)
     return "\n".join(lines).rstrip() + "\n"
 
