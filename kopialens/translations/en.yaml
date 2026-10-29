@@ -1,0 +1,12 @@
+configuration:
+  kopia_hostname:
+    name: Computer name for backups
+    description: The computer name kopia gives snapshots made here. Keep it the same so they stay in one history.
+  kopia_username:
+    name: User name for backups
+    description: The user name kopia gives snapshots made here.
+  snapshot_mounting:
+    name: Snapshot mounting
+    description: Lets KopiaLens open a snapshot as a folder. Needs a restart.
+network:
+  7123/tcp: Direct access from your network, with KopiaLens's own sign-in. Leave empty to use KopiaLens from the sidebar only.

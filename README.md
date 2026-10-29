@@ -17,9 +17,16 @@ A feature-rich application that displays synchronized lyrics for your currently 
 
 ➡️ [View SyncLyrics Documentation](./synclyrics/README.md)
 
+### [KopiaLens](./kopialens)
+
+Find what's bloating your Kopia backups and get the space back. KopiaLens shows the real size of everything in a Kopia repository, finds the files you never meant to keep, and can run your backups too. Opens in the Home Assistant sidebar.
+
+➡️ [KopiaLens in Home Assistant](https://kopialens.com/docs/home-assistant) · [kopialens.com](https://kopialens.com)
+
 ---
 
 ## 🔗 Links
 
 - **Main SyncLyrics Repository:** [github.com/AnshulJ999/SyncLyrics](https://github.com/AnshulJ999/SyncLyrics)
+- **KopiaLens:** [kopialens.com](https://kopialens.com) · issues: [AnshulJ999/KopiaLens](https://github.com/AnshulJ999/KopiaLens/issues)
 - **Report Issues:** [Open an issue](https://github.com/AnshulJ999/homeassistant-addons/issues)

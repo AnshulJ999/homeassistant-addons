@@ -1,0 +1,4 @@
+# Used only when Home Assistant builds the add-on itself (config.yaml without "image:", a local test).
+build_from:
+  amd64: ghcr.io/anshulj999/kopialens:latest
+  aarch64: ghcr.io/anshulj999/kopialens:latest

@@ -1,0 +1,61 @@
+# KopiaLens as a Home Assistant add-on (app). Copied into AnshulJ999/homeassistant-addons only at the
+# public release; until then it is tested as a local add-on (packaging/homeassistant/README.md).
+# version is stamped by the release pipeline from the release tag.
+name: KopiaLens
+version: "1.0.0"
+slug: kopialens
+description: See what your Kopia backups hold, what takes the space, and clean them up.
+url: https://kopialens.com
+image: ghcr.io/anshulj999/kopialens-ha-{arch}
+arch:
+  - amd64
+  - aarch64
+init: false            # the image runs tini itself
+startup: application
+boot: auto
+watchdog: http://[HOST]:[PORT:7123]/health
+
+# Opens in the sidebar through Home Assistant's own sign-in, for admins only.
+ingress: true
+ingress_port: 7123
+panel_icon: mdi:archive-search-outline
+panel_title: KopiaLens
+panel_admin: true
+
+# The direct port is off until a port number is entered; it keeps KopiaLens's own sign-in.
+ports:
+  7123/tcp: null
+
+map:
+  - type: share
+    read_only: false
+  - type: media
+    read_only: false
+  - type: backup
+    read_only: false
+  - type: homeassistant_config
+    read_only: true
+
+# Snapshot mounting needs FUSE. Declared always; KopiaLens mounts only with snapshot_mounting on.
+devices:
+  - /dev/fuse
+privileged:
+  - SYS_ADMIN
+
+# The index is rebuilt from the repositories, so Home Assistant backups leave it out (the patterns
+# match the end of the full path: "*_kopialens/" pins them to this add-on's data folder itself).
+backup_exclude:
+  - "*_kopialens/repo[0-9]*"
+  - "*_kopialens/bz"
+  - "*_kopialens/cache"
+  - "*_kopialens/kopia-cache"
+  - "*_kopialens/logs"
+
+options:
+  kopia_hostname: homeassistant
+  kopia_username: kopialens
+  snapshot_mounting: false
+schema:
+  kopia_hostname: "match(^[A-Za-z0-9][A-Za-z0-9._-]*$)"
+  kopia_username: "match(^[A-Za-z0-9][A-Za-z0-9._-]*$)"
+  snapshot_mounting: bool
