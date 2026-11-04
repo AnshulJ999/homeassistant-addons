@@ -2,7 +2,7 @@
 # public release; until then it is tested as a local add-on (packaging/homeassistant/README.md).
 # version is stamped by the release pipeline from the release tag.
 name: KopiaLens
-version: "1.0.0"
+version: "1.0.1"
 slug: kopialens
 description: See what your Kopia backups hold, what takes the space, and clean them up.
 url: https://kopialens.com

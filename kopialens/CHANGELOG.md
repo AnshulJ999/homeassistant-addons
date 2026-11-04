@@ -1,23 +1,44 @@
 # Changelog
 
+Every KopiaLens release, newest first. The release pipeline copies a version's section into its GitHub release notes, so each heading must read `## [X.Y.Z] - YYYY-MM-DD`. Sections use `### Added`, `### Changed`, `### Fixed` (and `### Important` above them when something needs the reader's attention). One short line per change, in the user's words. 
+
+## [1.0.1] - 2026-11-04
+
+A small fix release for the tray menu.
+
+### Fixed
+
+- Windows: the tray menu no longer stops responding after KopiaLens has been running for a long time.
+- Windows: the tray menu no longer closes by itself while it's open.
+- Windows: changing Start at logon from the tray can no longer freeze the tray.
+- The notice about snapshots not taken by KopiaLens now reads correctly for a single snapshot.
+- Table headers keep the right hover colour in every theme.
+
+### Changed
+
+- The times in the tray menu update every 2 minutes. The tooltip stays live, and changes like pausing or a finished index still show right away.
+- The install guide now covers Home Assistant, where your data is kept, and how to uninstall.
+- The usage stats page now lists every value KopiaLens sends.
+
 ## [1.0.0] - 2026-10-30
 
-KopiaLens 1.0 is the first public release: a companion app for [Kopia](https://kopia.io) that shows the real size of everything in your repository, finds the files you never meant to keep, and removes them from every snapshot that holds them (Pro), with an optional dry run first.
+KopiaLens 1.0 is the first public release: a backup app for [Kopia](https://github.com/kopia/kopia), with an analysis engine built in. It creates repositories, runs your backups on a schedule and restores files, and it shows you what's inside your backups: the real size of every folder, every version of every file, and what grows each night.
 
 ### What it does
 
-- See where the space goes: every backed-up folder with its real cost after deduplication.
+- Run backups on a schedule, on your existing repositories or new ones. Kopia is included, and KopiaUI and the kopia command line can keep working alongside it.
+- Restore, download or mount anything from any snapshot.
+- See where the space goes: every backed-up file and folder with its real physical size after deduplication.
 - Find any file in any snapshot, with every version of it.
 - Rank snapshots by how much deleting them would free.
 - Catch the folders that rewrite themselves on every backup.
-- Browse any snapshot like a disk; restore, download or mount what you need.
+- Browse any snapshot like a disk.
 - Try a retention policy before you use it, and write exclusions that do what you meant.
-- Run backups on a schedule, beside KopiaUI and the kopia command line or on its own (kopia is included).
-- Remove files and folders from existing snapshots (Pro).
+- Remove files and folders from existing snapshots, with an optional dry run first (Pro).
 
 ### Free and Pro
 
-Everything KopiaLens shows you is free, with no time limit. Pro adds the actions that remove data from inside your backups: [kopialens.com/pricing](https://kopialens.com/pricing).
+The whole backup app is free: backups, restore, search and every analysis view, with no time limit and no account. Pro adds the tools that remove junk from inside your old backups: [kopialens.com/pricing](https://kopialens.com/pricing).
 
 ### Downloads
 
