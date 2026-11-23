@@ -2,6 +2,49 @@
 
 Every KopiaLens release, newest first. The release pipeline copies a version's section into its GitHub release notes, so each heading must read `## [X.Y.Z] - YYYY-MM-DD`. Sections use `### Added`, `### Changed`, `### Fixed` (and `### Important` above them when something needs the reader's attention). One short line per change, in the user's words. 
 
+## [1.1.0] - 2026-11-23
+
+### Important
+
+- macOS, and Linux outside Debian and Ubuntu: earlier versions couldn't check for updates or activate a licence, so they never showed an update notice. Download 1.1.0 by hand once; later updates arrive in the app as usual.
+
+### Added
+
+- Intel Macs: a separate macOS download next to the Apple silicon one.
+- Backblaze on a Mac: KopiaLens reads Backblaze Personal Backup's data on macOS, startup disk and external drives.
+- Backblaze from another computer: point KopiaLens at a shared Backblaze data folder (bzdata) from Windows, a Mac, Docker or Home Assistant. Setup offers it when Backblaze isn't on this computer, and a folder change applies without a restart.
+- Backblaze Health shows the installed Backblaze version and says when a newer one is out.
+- Backblaze Health notes when Backblaze lost track of files it had already uploaded and queued them again, from Backblaze's own records. The Uploaded history keeps those days.
+- Backblaze Health notes when Backblaze's server asked for files to be uploaded again.
+- Backblaze and Kopia search accept `*` as a wildcard. Other typed text, including `_` and `%`, matches as typed.
+- Folder icons in more Backblaze tables, and short tooltips on Backblaze's own terms.
+
+### Changed
+
+- The Backblaze Queue shows when Backblaze last updated it.
+- Import archived history is hidden; it needed a hand-copied log folder.
+- Backblaze Health's checks are listed under a "?" next to its summary.
+- Backblaze Sessions shows one row per backup run: when it started, how long it took and what it uploaded.
+- Backblaze screens follow the light and dark themes.
+- When Backblaze's data folder is there but can't be read (on a Mac, usually a privacy setting), setup says so and how to allow it, instead of "Backblaze wasn't found".
+- Diagnostics bundles now list each Backblaze drive's scan file and whether it's indexed, and the state of Backblaze's upload queue.
+- Docker: the example compose file uses a full path for `/config`, so it works in Portainer, and leaves snapshot mounting off, so it starts on hosts without FUSE.
+
+### Fixed
+
+- macOS and Linux: update checks, licence activation and other secure connections now work.
+- Backblaze: the first index no longer fails when one of your drives has an empty or interrupted Backblaze scan.
+- Backblaze: a drive with only a few files is now indexed, instead of being skipped as an interrupted scan.
+- A beta version now starts on the Beta update channel, so it's offered the next beta.
+- With indexing set to "off" or "interval", background work no longer waits up to a day after a restart, so the Backblaze upload queue and totals stay current.
+- Backblaze: the Upload queue no longer shows 0 files when Backblaze's queue isn't available; it shows how many files Backblaze reports are left.
+- A Backblaze data folder set in Settings is now used for indexing too.
+- The Backblaze Queue no longer empties for a while when Backblaze rewrites its queue file.
+- Backblaze Sessions keeps every backup run once KopiaLens has seen it. Backblaze locks each day's log when the day ends, so earlier runs used to disappear.
+- The Backblaze dashboard's recently-added folders refresh after each index.
+- The Backblaze header chip only warns when a newer file list is waiting to be indexed.
+- The Diff column stays neutral when files waiting to upload explain the difference.
+
 ## [1.0.1] - 2026-11-04
 
 A small fix release for the tray menu.
