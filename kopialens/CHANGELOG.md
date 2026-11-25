@@ -2,6 +2,17 @@
 
 Every KopiaLens release, newest first. The release pipeline copies a version's section into its GitHub release notes, so each heading must read `## [X.Y.Z] - YYYY-MM-DD`. Sections use `### Added`, `### Changed`, `### Fixed` (and `### Important` above them when something needs the reader's attention). One short line per change, in the user's words. 
 
+## [1.1.1] - 2026-11-25
+
+### Added
+
+- Docker: setup finds kopia repositories in the folders attached to the container and offers to connect them, and says when no repository folder is attached.
+
+### Fixed
+
+- Very large files are indexed in full. For a file big enough that kopia split its list of pieces again, the index skipped the file, didn't count its size, and rebuilt every source on each run.
+- Linux and Mac file permissions no longer log "unknown mode" warnings while indexing.
+
 ## [1.1.0] - 2026-11-23
 
 ### Important
